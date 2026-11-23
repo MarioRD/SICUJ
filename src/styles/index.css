@@ -1,0 +1,212 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   SICUJ · Sistema de medidas fluidas
+   --------------------------------------------------------------------------
+   Todas las medidas (texto, espacios, radios, anchos) salen de clamp().
+   Se escalan con `vmin` (el lado CORTO de la pantalla), no con `vw`:
+   así un teléfono en vertical o en horizontal tiene exactamente las mismas
+   proporciones, porque el lado corto no cambia al girarlo.
+
+   Hay dos escalas:
+   - Ciudadana (por defecto): calibrada para teléfonos (lado corto 320–480 px).
+   - Admin (.escala-admin):    calibrada para laptop/monitor (alto 700–1440 px).
+
+   Tailwind lee estas variables (ver @theme inline), así que `text-lg`, `p-4`,
+   `gap-6`, `rounded-xl`, etc. ya son fluidos sin escribir clamp() en cada
+   componente. `--escala-texto` la ajusta el usuario en Accesibilidad.
+   ========================================================================== */
+
+:root {
+  --escala-texto: 1;
+
+  /* Tipografía ciudadana: 16 px en un teléfono de 360 px → ~20 px en tablet */
+  --fs-xs: calc(clamp(0.75rem, 0.66rem + 0.35vmin, 0.875rem) * var(--escala-texto));
+  --fs-sm: calc(clamp(0.875rem, 0.76rem + 0.45vmin, 1rem) * var(--escala-texto));
+  --fs-base: calc(clamp(1rem, 0.85rem + 0.6vmin, 1.25rem) * var(--escala-texto));
+  --fs-lg: calc(clamp(1.125rem, 0.95rem + 0.75vmin, 1.4rem) * var(--escala-texto));
+  --fs-xl: calc(clamp(1.25rem, 1rem + 1vmin, 1.65rem) * var(--escala-texto));
+  --fs-2xl: calc(clamp(1.5rem, 1.15rem + 1.5vmin, 2.1rem) * var(--escala-texto));
+  --fs-3xl: calc(clamp(1.85rem, 1.3rem + 2.4vmin, 2.75rem) * var(--escala-texto));
+
+  /* Unidad de espacio: p-4 = 4 × unidad (≈16 px en teléfono) */
+  --sp-unidad: clamp(0.25rem, 0.2rem + 0.2vmin, 0.34rem);
+  --radio: clamp(0.5rem, 0.35rem + 0.6vmin, 0.9rem);
+  --ancho-contenido: clamp(20rem, 92vw, 60rem);
+  --toque-min: clamp(2.75rem, 2.5rem + 1vmin, 3.25rem); /* objetivo táctil WCAG ≥ 44 px */
+
+  /* Colores (provisionales: la paleta institucional llegará con el rediseño) */
+  --c-fondo: #f6f7f8;
+  --c-superficie: #ffffff;
+  --c-tinta: #14212b;
+  --c-tenue: #4b5a66;
+  --c-linea: #d5dbe0;
+  --c-marca: #0f4c5c;
+  --c-marca-tinta: #ffffff;
+  --c-acento: #f2b705;
+  --c-acento-tinta: #14212b;
+  --c-ok: #136f3a;
+  --c-ok-fondo: #e3f4ea;
+  --c-error: #b42318;
+  --c-error-fondo: #fdecea;
+  --c-aviso: #8a5a00;
+  --c-aviso-fondo: #fff4d6;
+  --c-foco: #f2b705;
+
+  color-scheme: light;
+}
+
+/* Escala del panel administrativo: densa, pensada para laptop y monitor */
+.escala-admin {
+  --fs-xs: calc(clamp(0.72rem, 0.55rem + 0.3vmin, 0.85rem) * var(--escala-texto));
+  --fs-sm: calc(clamp(0.8rem, 0.6rem + 0.35vmin, 0.95rem) * var(--escala-texto));
+  --fs-base: calc(clamp(0.875rem, 0.62rem + 0.42vmin, 1.06rem) * var(--escala-texto));
+  --fs-lg: calc(clamp(1rem, 0.7rem + 0.5vmin, 1.25rem) * var(--escala-texto));
+  --fs-xl: calc(clamp(1.15rem, 0.75rem + 0.65vmin, 1.5rem) * var(--escala-texto));
+  --fs-2xl: calc(clamp(1.4rem, 0.85rem + 0.9vmin, 1.9rem) * var(--escala-texto));
+  --fs-3xl: calc(clamp(1.75rem, 1rem + 1.2vmin, 2.4rem) * var(--escala-texto));
+  --sp-unidad: clamp(0.22rem, 0.12rem + 0.18vmin, 0.3rem);
+  --radio: clamp(0.4rem, 0.25rem + 0.3vmin, 0.65rem);
+  --ancho-contenido: clamp(40rem, 94vw, 110rem);
+  --toque-min: clamp(2.25rem, 1.8rem + 0.6vmin, 2.75rem);
+}
+
+/* Alto contraste (WCAG AAA en texto normal) */
+:root[data-contraste="alto"] {
+  --c-fondo: #000000;
+  --c-superficie: #000000;
+  --c-tinta: #ffffff;
+  --c-tenue: #f0f0f0;
+  --c-linea: #ffffff;
+  --c-marca: #ffe600;
+  --c-marca-tinta: #000000;
+  --c-acento: #00e5ff;
+  --c-acento-tinta: #000000;
+  --c-ok: #7dff9a;
+  --c-ok-fondo: #000000;
+  --c-error: #ff8a80;
+  --c-error-fondo: #000000;
+  --c-aviso: #ffe600;
+  --c-aviso-fondo: #000000;
+  --c-foco: #00e5ff;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --font-sans: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  --text-xs: var(--fs-xs);
+  --text-sm: var(--fs-sm);
+  --text-base: var(--fs-base);
+  --text-lg: var(--fs-lg);
+  --text-xl: var(--fs-xl);
+  --text-2xl: var(--fs-2xl);
+  --text-3xl: var(--fs-3xl);
+
+  --spacing: var(--sp-unidad);
+
+  --radius-sm: calc(var(--radio) * 0.5);
+  --radius-md: calc(var(--radio) * 0.75);
+  --radius-lg: var(--radio);
+  --radius-xl: calc(var(--radio) * 1.4);
+
+  --color-fondo: var(--c-fondo);
+  --color-superficie: var(--c-superficie);
+  --color-tinta: var(--c-tinta);
+  --color-tenue: var(--c-tenue);
+  --color-linea: var(--c-linea);
+  --color-marca: var(--c-marca);
+  --color-marca-tinta: var(--c-marca-tinta);
+  --color-acento: var(--c-acento);
+  --color-acento-tinta: var(--c-acento-tinta);
+  --color-ok: var(--c-ok);
+  --color-ok-fondo: var(--c-ok-fondo);
+  --color-error: var(--c-error);
+  --color-error-fondo: var(--c-error-fondo);
+  --color-aviso: var(--c-aviso);
+  --color-aviso-fondo: var(--c-aviso-fondo);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+  body {
+    background: var(--c-fondo);
+    color: var(--c-tinta);
+    font-family: var(--font-sans);
+    font-size: var(--fs-base);
+    line-height: 1.55;
+    min-height: 100dvh;
+  }
+  :focus-visible {
+    outline: 3px solid var(--c-foco);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+  /* En alto contraste los bordes siempre se ven */
+  :root[data-contraste="alto"] .tarjeta,
+  :root[data-contraste="alto"] button,
+  :root[data-contraste="alto"] input,
+  :root[data-contraste="alto"] select,
+  :root[data-contraste="alto"] textarea {
+    border-color: var(--c-linea) !important;
+  }
+  :root[data-movimiento="reducido"] *,
+  :root[data-movimiento="reducido"] *::before,
+  :root[data-movimiento="reducido"] *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+  dialog::backdrop {
+    background: rgb(0 0 0 / 0.55);
+  }
+}
+
+@layer components {
+  .contenedor {
+    width: 100%;
+    max-width: var(--ancho-contenido);
+    margin-inline: auto;
+    padding-inline: max(calc(var(--sp-unidad) * 4), env(safe-area-inset-left));
+  }
+  .tarjeta {
+    background: var(--c-superficie);
+    border: 1px solid var(--c-linea);
+    border-radius: var(--radio);
+  }
+  /* Rejilla que se adapta sola: misma anchura mínima de tarjeta en vertical u horizontal */
+  .rejilla-auto {
+    display: grid;
+    gap: calc(var(--sp-unidad) * 4);
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, clamp(16rem, 40vmin, 22rem)), 1fr));
+  }
+  /* Celular en horizontal: el encabezado deja de ser fijo para no robar alto útil */
+  @media (orientation: landscape) and (max-height: 32rem) {
+    .encabezado-fijo {
+      position: static;
+    }
+  }
+  .toque {
+    min-height: var(--toque-min);
+    min-width: var(--toque-min);
+  }
+  .solo-lectores {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+}
