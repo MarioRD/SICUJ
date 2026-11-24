@@ -1,11 +1,12 @@
-import { lazy, Suspense, type ComponentProps } from 'react';
+import { lazySeguro } from '@/utils/cargaSegura';
+import { Suspense, type ComponentProps } from 'react';
 import type { Taller } from '@/types/models';
 import type { PuntoMapa } from './MapaCultural';
 
 export type { PuntoMapa } from './MapaCultural';
 export { ComoLlegar, type Destino } from './ComoLlegar';
 
-const MapaCultural = lazy(() => import('./MapaCultural'));
+const MapaCultural = lazySeguro(() => import('./MapaCultural'));
 
 /** El mapa (Leaflet) se descarga solo cuando se muestra. */
 export function Mapa(props: ComponentProps<typeof MapaCultural>) {

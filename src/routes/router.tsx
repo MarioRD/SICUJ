@@ -1,9 +1,11 @@
-import { lazy, Suspense, type ComponentType } from 'react';
+import { lazySeguro } from '@/utils/cargaSegura';
+import { Suspense, type ComponentType } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
 import { Cargando } from '@/components/ui/Basicos';
 import { PublicLayout } from '@/layouts/PublicLayout';
 import CatalogoPage from '@/pages/public/CatalogoPage';
 import NoEncontradaPage from '@/pages/public/NoEncontradaPage';
+import ErrorRutaPage from '@/pages/public/ErrorRutaPage';
 import { ProtectedRoute } from './ProtectedRoute';
 
 /**
@@ -12,7 +14,7 @@ import { ProtectedRoute } from './ProtectedRoute';
  * únicamente cuando se visitan.
  */
 function diferida(cargar: () => Promise<{ default: ComponentType }>) {
-  const Componente = lazy(cargar);
+  const Componente = lazySeguro(cargar);
   return (
     <Suspense fallback={<Cargando />}>
       <Componente />
@@ -20,12 +22,13 @@ function diferida(cargar: () => Promise<{ default: ComponentType }>) {
   );
 }
 
-const AdminLayout = lazy(() => import('@/layouts/AdminLayout').then((m) => ({ default: m.AdminLayout })));
+const AdminLayout = lazySeguro(() => import('@/layouts/AdminLayout').then((m) => ({ default: m.AdminLayout })));
 
 export const router = createBrowserRouter([
   {
     path: '/',
     element: <PublicLayout />,
+    errorElement: <ErrorRutaPage />,
     children: [
       { index: true, element: <CatalogoPage /> },
       { path: 'taller/:id', element: diferida(() => import('@/pages/public/TallerDetallePage')) },
@@ -41,9 +44,10 @@ export const router = createBrowserRouter([
       { path: 'terminos', element: diferida(() => import('@/pages/public/TerminosPage')) },
     ],
   },
-  { path: '/admin/login', element: diferida(() => import('@/pages/admin/LoginPage')) },
+  { path: '/admin/login', element: diferida(() => import('@/pages/admin/LoginPage')), errorElement: <ErrorRutaPage /> },
   {
     path: '/admin',
+    errorElement: <ErrorRutaPage />,
     element: (
       <ProtectedRoute roles={['admin', 'staff']}>
         <Suspense fallback={<Cargando />}>

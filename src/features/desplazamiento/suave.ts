@@ -18,7 +18,9 @@ const quieto = () => {
  */
 export function activarDesplazamientoSuave() {
   const aplicar = () => {
-    const debe = !quieto() && document.documentElement.dataset.movimiento !== 'reducido';
+    // En táctil no hace falta (el scroll nativo ya es suave) y Lenis lee la posición en cada cuadro
+    const tactil = window.matchMedia('(hover: none), (pointer: coarse)').matches;
+    const debe = !tactil && !quieto() && document.documentElement.dataset.movimiento !== 'reducido';
     if (debe && !lenis) {
       lenis = new Lenis({
         autoRaf: true,

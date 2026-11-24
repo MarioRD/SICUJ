@@ -1,5 +1,6 @@
+import { lazySeguro } from '@/utils/cargaSegura';
 import { Accessibility, History, Home, LayoutDashboard, LogIn, LogOut, MapPinned, Mic, Moon, ScanText, Sparkles, Sun, Ticket, UserPen, type LucideIcon } from 'lucide-react';
-import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, NavLink, Outlet, ScrollRestoration, useLocation } from 'react-router-dom';
 import { SaltarAlContenido } from '@/components/ui/Basicos';
@@ -10,8 +11,8 @@ import { useAuth } from '@/context/AuthContext';
 import { usePreferencias } from '@/context/PreferenciasContext';
 import { cerrarSesion } from '@/services/auth.service';
 
-const LectorCarteles = lazy(() => import('@/components/public/LectorCarteles'));
-const AsistenteVoz = lazy(() => import('@/components/public/AsistenteVoz'));
+const LectorCarteles = lazySeguro(() => import('@/components/public/LectorCarteles'));
+const AsistenteVoz = lazySeguro(() => import('@/components/public/AsistenteVoz'));
 
 /**
  * Botón flotante (como el de chat): se despliega con las ayudas que sirven en cualquier
@@ -369,7 +370,7 @@ export function PublicLayout() {
 
       <nav
         aria-label="Navegación principal"
-        className="fixed inset-x-0 bottom-0 z-30 px-3 lg:hidden"
+        className="barra-inferior fixed inset-x-0 bottom-0 z-30 px-3 lg:hidden"
         style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
       >
         <Vidrio fuerza={26} bisel={22} className="mx-auto max-w-[32rem] rounded-full p-1.5 shadow-lg">

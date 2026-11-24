@@ -1,10 +1,11 @@
+import { lazySeguro } from '@/utils/cargaSegura';
 import { ArrowUpRight, Gauge, Mic, Minus, Moon, Plus, ScanText, Type, Wind } from 'lucide-react';
-import { lazy, Suspense, useState, type ReactNode } from 'react';
+import { Suspense, useState, type ReactNode } from 'react';
 import { Boton } from '@/components/ui/Boton';
 import { usePreferencias, type TamanoTexto } from '@/context/PreferenciasContext';
 
-const LectorCarteles = lazy(() => import('@/components/public/LectorCarteles'));
-const AsistenteVoz = lazy(() => import('@/components/public/AsistenteVoz'));
+const LectorCarteles = lazySeguro(() => import('@/components/public/LectorCarteles'));
+const AsistenteVoz = lazySeguro(() => import('@/components/public/AsistenteVoz'));
 
 const TAMANOS: Array<{ v: TamanoTexto; t: string; escala: string }> = [
   { v: 'normal', t: 'Normal', escala: 'text-base' },

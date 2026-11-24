@@ -1199,7 +1199,7 @@
       radial-gradient(45% 55% at 75% 45%, var(--destello-b), transparent 70%);
     filter: blur(48px);
     opacity: 0.9;
-    animation: destellos 14s ease-in-out infinite alternate;
+    animation: destellos 14s steps(28) infinite alternate;
     pointer-events: none;
   }
   .mapa-panel {
@@ -1214,7 +1214,7 @@
       radial-gradient(38% 60% at 12% 55%, var(--destello-a), transparent 70%),
       radial-gradient(38% 60% at 88% 40%, var(--destello-b), transparent 70%),
       linear-gradient(135deg, var(--c-anil), var(--c-azul) 55%, var(--c-anil));
-    animation: destellos 14s ease-in-out infinite alternate;
+    animation: destellos 14s steps(28) infinite alternate;
   }
   .mapa-panel::before {
     content: "";
@@ -1397,6 +1397,9 @@
   .historia-linea {
     display: grid;
     gap: 1.5rem 2.5rem;
+    /* Fuera de pantalla no se dibuja (ahorra trabajo al cargar y al desplazar) */
+    content-visibility: auto;
+    contain-intrinsic-size: auto 1400px;
   }
   @media (min-width: 64rem) {
     .historia-linea {
@@ -2001,13 +2004,13 @@
 }
 
 /* ---------------- Textos que aparecen al entrar en pantalla ----------------
-   Títulos y su primer párrafo suben y salen de un desenfoque conforme llegan a la vista.
+   Títulos y su primer párrafo suben y se aclaran conforme llegan a la vista.
    Solo con movimiento permitido y donde el navegador tiene línea de tiempo de vista. */
+/* Solo opacidad y desplazamiento: los resuelve la tarjeta gráfica sin repintar */
 @keyframes texto-aparece {
   from {
     opacity: 0;
-    translate: 0 0.6em;
-    filter: blur(6px);
+    translate: 0 0.7em;
   }
 }
 @media (prefers-reduced-motion: no-preference) {
@@ -2041,6 +2044,29 @@ html:active-view-transition main {
 }
 html:active-view-transition .nav-indicador {
   view-transition-name: nav-activo;
+}
+/* El menú inferior y el encabezado quedan fijos y por encima de la página que se desliza */
+html:active-view-transition .barra-inferior {
+  view-transition-name: barra-inferior;
+}
+html:active-view-transition .encabezado-fijo {
+  view-transition-name: encabezado;
+}
+::view-transition-group(barra-inferior),
+::view-transition-group(encabezado) {
+  z-index: 2;
+  animation: none;
+}
+::view-transition-old(barra-inferior),
+::view-transition-old(encabezado) {
+  display: none;
+}
+::view-transition-new(barra-inferior),
+::view-transition-new(encabezado) {
+  animation: none;
+}
+::view-transition-group(nav-activo) {
+  z-index: 3;
 }
 @keyframes vt-sale-izq {
   to { opacity: 0; translate: -18% 0; scale: 0.97; filter: blur(4px); }

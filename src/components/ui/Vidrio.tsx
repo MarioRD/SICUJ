@@ -80,6 +80,19 @@ function soportaLiquido() {
   return (soporteCache = window.CSS?.supports?.('backdrop-filter', 'url(#a)') ?? false);
 }
 
+/**
+ * Celulares y equipos modestos: una sola pasada de refracción en lugar de tres
+ * (una por canal de color). El arcoíris del canto casi no se nota en pantallas
+ * pequeñas y el filtro se recalcula en cada cuadro de desplazamiento.
+ */
+let ligeroCache: boolean | null = null;
+function modoLigero() {
+  if (ligeroCache !== null) return ligeroCache;
+  if (typeof window === 'undefined') return (ligeroCache = true);
+  const nucleos = navigator.hardwareConcurrency ?? 8;
+  return (ligeroCache = window.matchMedia('(pointer: coarse)').matches || nucleos <= 4);
+}
+
 type Props = HTMLAttributes<HTMLElement> & {
   as?: keyof HTMLElementTagNameMap;
   /** Solo cuando `as` es un botón. */
@@ -105,6 +118,7 @@ export const Vidrio = forwardRef<HTMLElement, Props>(function Vidrio(
   const id = `vidrio-${useId().replace(/[^a-zA-Z0-9-]/g, '')}`;
   const [mapa, setMapa] = useState<{ url: string; w: number; h: number } | null>(null);
   const [liquido] = useState(soportaLiquido);
+  const [ligero] = useState(modoLigero);
 
   const medir = useCallback(() => {
     const el = ref.current;
@@ -150,6 +164,10 @@ export const Vidrio = forwardRef<HTMLElement, Props>(function Vidrio(
       <svg aria-hidden="true" focusable="false" width="0" height="0" style={{ position: 'absolute', width: 0, height: 0, overflow: 'hidden' }}>
         <filter id={id} colorInterpolationFilters="sRGB" x="0" y="0" width="100%" height="100%">
           <feImage href={mapa.url} x="0" y="0" width={mapa.w} height={mapa.h} preserveAspectRatio="none" result="mapa" />
+          {ligero ? (
+            <feDisplacementMap in="SourceGraphic" in2="mapa" scale={-fuerza * 2} xChannelSelector="R" yChannelSelector="G" />
+          ) : (
+            <>
           <feDisplacementMap in="SourceGraphic" in2="mapa" scale={-(fuerza + separacion) * 2} xChannelSelector="R" yChannelSelector="G" result="dr" />
           <feColorMatrix in="dr" type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="r" />
           <feDisplacementMap in="SourceGraphic" in2="mapa" scale={-fuerza * 2} xChannelSelector="R" yChannelSelector="G" result="dg" />
@@ -158,6 +176,8 @@ export const Vidrio = forwardRef<HTMLElement, Props>(function Vidrio(
           <feColorMatrix in="db" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0" result="b" />
           <feBlend in="r" in2="g" mode="screen" result="rg" />
           <feBlend in="rg" in2="b" mode="screen" />
+            </>
+          )}
         </filter>
       </svg>
     ),
