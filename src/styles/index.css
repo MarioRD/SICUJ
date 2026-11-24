@@ -138,6 +138,22 @@
   }
 }
 
+/* Celulares: escala un paso más compacta para que las pantallas quepan sin scroll de más
+   (la persona puede agrandarla en Accesibilidad; --escala-texto sigue aplicando). */
+@media (max-width: 30rem) {
+  :root {
+    --fs-xs: calc(0.72rem * var(--escala-texto));
+    --fs-sm: calc(0.82rem * var(--escala-texto));
+    --fs-base: calc(0.9375rem * var(--escala-texto));
+    --fs-lg: calc(1.04rem * var(--escala-texto));
+    --fs-xl: calc(1.16rem * var(--escala-texto));
+    --fs-2xl: calc(1.36rem * var(--escala-texto));
+    --fs-3xl: calc(1.62rem * var(--escala-texto));
+    --fs-portada: calc(clamp(1.85rem, 8.6vw, 2.3rem) * var(--escala-texto));
+    --sp-unidad: 0.235rem;
+  }
+}
+
 /* ---------------- Modo oscuro: noche de luces de candil ---------------- */
 :root[data-tema="oscuro"] {
   --c-fondo: var(--c-noche);
@@ -275,6 +291,8 @@
 
 @layer base {
   html {
+    /* Sin el "jalar para recargar" del navegador: usamos uno propio (RecargarArrastrando) */
+    overscroll-behavior-y: none;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
     overflow-x: clip;
@@ -1173,26 +1191,26 @@
       --corte: clamp(2.5rem, 12cqi, 3.5rem);
     }
     .dispositivo {
-      inline-size: min(84vw, 22rem);
-      aspect-ratio: 9 / 13;
-      padding: 9px;
-      border-radius: 44px;
+      inline-size: min(70vw, 17.5rem);
+      aspect-ratio: 9 / 14;
+      padding: 7px;
+      border-radius: 36px;
     }
     .dispositivo::before {
       /* isla del celular */
-      inset-block-start: 18px;
-      width: 32%;
-      height: 22px;
+      inset-block-start: 15px;
+      width: 30%;
+      height: 18px;
       background: #000;
       z-index: 2;
     }
     .dispositivo-pantalla {
-      border-radius: 36px;
+      border-radius: 29px;
     }
     .mapa-panel {
-      inset-block: 18% 0;
-      inset-inline: -0.5rem;
-      border-radius: 2rem;
+      inset-block: 24% 0;
+      inset-inline: 0;
+      border-radius: 1.75rem;
     }
   }
 
@@ -1279,8 +1297,21 @@
     white-space: nowrap;
   }
   @media (max-width: 39.99rem) {
+    .mosaico-escena {
+      /* Más ancha que la pantalla y centrada: piezas grandes, las de los lados asoman */
+      inline-size: 150vw;
+      justify-self: start;
+      margin-inline: calc(50% - 75vw);
+      --hueco: 0.6rem;
+    }
     .mosaico-fecha {
-      display: none;
+      font-size: 0.68rem;
+    }
+    .mosaico-titulo {
+      font-size: clamp(1.7rem, 8.4vw, 2.3rem);
+    }
+    .mosaico-sub {
+      font-size: 0.95rem;
     }
   }
   .mosaico-titulo {
@@ -1315,6 +1346,13 @@
   }
   .historia-hito .mural {
     border-radius: 0.8rem;
+  }
+  @media (max-width: 39.99rem) {
+    /* Celular: la ilustración arriba a lo ancho y el texto completo debajo */
+    .historia-hito {
+      flex-direction: column;
+      gap: 0.6rem;
+    }
   }
 
   /* ---------------- Pie de página: firma en bajorrelieve ---------------- */
@@ -1861,19 +1899,20 @@
     block-size: env(titlebar-area-height, 2.25rem);
     padding-inline: 0.75rem;
     font: 700 0.8rem/1 var(--font-display, system-ui);
-    color: #fff;
+    color: var(--c-titulo);
     -webkit-app-region: drag;
     app-region: drag;
     user-select: none;
   }
-  /* El fondo cubre todo el ancho (también detrás de los botones del sistema) */
+  /* El fondo cubre todo el ancho (también detrás de los botones del sistema, que toman
+     el mismo color de theme-color: blanco en claro, noche en oscuro) */
   .barra-titulo::before {
     content: "";
     position: fixed;
     inset: 0 0 auto 0;
     block-size: env(titlebar-area-height, 2.25rem);
     z-index: -1;
-    background: #263167;
+    background: #ffffff;
     border-block-end: 3px solid transparent;
     border-image: var(--rebozo) 1;
   }

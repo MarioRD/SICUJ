@@ -289,7 +289,7 @@ export function HistoriaCoacalco() {
 
       {animado ? (
         <div ref={escenario} style={{ height: '340dvh' }}>
-          <div className="sticky top-0 grid h-dvh place-items-center overflow-hidden">{escena}</div>
+          <div className="sticky top-0 grid h-dvh place-items-center overflow-hidden max-sm:mx-[calc(50%-50vw)]">{escena}</div>
         </div>
       ) : (
         <div className="grid place-items-center py-6 [--sub:1]">{escena}</div>
@@ -298,13 +298,13 @@ export function HistoriaCoacalco() {
       <ol className="historia-linea contenedor mt-4">
         {EPOCAS.map((e) => (
           <li key={e.titulo} className="historia-hito">
-            <div className="w-28 shrink-0 sm:w-36">
+            <div className="w-full max-w-[17rem] shrink-0 sm:w-36">
               <Mural titulo={`Ilustración: ${e.titulo}`}>{e.mural}</Mural>
             </div>
             <div className="flex min-w-0 flex-col gap-1">
               <p className="w-fit rounded-full bg-mural px-3 py-0.5 text-xs font-semibold text-hueso">{e.cuando}</p>
-              <h3 className="text-lg leading-tight font-bold">{e.titulo}</h3>
-              <p className="text-sm text-tinta">{e.texto}</p>
+              <h3 className="text-xl leading-tight font-bold sm:text-lg">{e.titulo}</h3>
+              <p className="text-base text-tinta sm:text-sm">{e.texto}</p>
             </div>
           </li>
         ))}

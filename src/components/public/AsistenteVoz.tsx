@@ -1,12 +1,13 @@
 import { ClipboardList, Keyboard, LoaderCircle, Mic, Send, Sparkles, Ticket, Volume2 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { AvisoPermiso, usePermiso } from '@/components/ui/AvisoPermiso';
 import { Boton } from '@/components/ui/Boton';
 import { ModalVidrio } from '@/components/ui/ModalVidrio';
 import { useAuth } from '@/context/AuthContext';
 import { usePreferencias } from '@/context/PreferenciasContext';
 import { buscarPorVoz, describirActividad, intencion, nombrarInteres, interes } from '@/features/voz/interpretar';
-import { callar, decir, escuchar, puedeEscuchar } from '@/features/voz/voz';
+import { callar, decir, ErrorEscucha, escuchar, puedeEscuchar } from '@/features/voz/voz';
 import { useSuscripcion } from '@/hooks/useSuscripcion';
 import { obtenerDatosInscripcion } from '@/services/datos.service';
 import { guardarPaseLocal, inscribir, miPaseEn } from '@/services/inscripciones.service';
@@ -53,6 +54,12 @@ export default function AsistenteVoz({ alCerrar }: { alCerrar: () => void }) {
   const [teclado, setTeclado] = useState(!conVoz);
   const [pase, setPase] = useState<string | null>(null);
   const [formulario, setFormulario] = useState<string | null>(null);
+  // Permiso de micrófono: primero lo explicamos con nuestro aviso, luego pregunta el navegador
+  const [permiso, setPermiso] = usePermiso('microfono');
+  const [pedirPermiso, setPedirPermiso] = useState(false);
+  const permisoRef = useRef(permiso);
+  permisoRef.current = permiso;
+  const explicado = useRef(false);
 
   // El diálogo es asíncrono (habla → escucha → responde): el estado vivo va en refs
   const pasoRef = useRef<Paso>('interes');
@@ -228,6 +235,12 @@ export default function AsistenteVoz({ alCerrar }: { alCerrar: () => void }) {
   oir.current = async () => {
     callar();
     detenerEscucha();
+    if (permisoRef.current === 'denied' || (permisoRef.current !== 'granted' && !explicado.current)) {
+      turno.current++;
+      setPedirPermiso(true);
+      setFase('esperando');
+      return;
+    }
     setAviso(null);
     setProvisional('');
     setFase('escuchando');
@@ -249,6 +262,11 @@ export default function AsistenteVoz({ alCerrar }: { alCerrar: () => void }) {
       if (!vivo.current || mio !== turno.current) return;
       cancelarEscucha.current = null;
       setFase('esperando');
+      if (err instanceof ErrorEscucha && (err.codigo === 'not-allowed' || err.codigo === 'service-not-allowed')) {
+        setPermiso('denied');
+        setPedirPermiso(true);
+        return;
+      }
       setAviso(err instanceof Error ? err.message : 'No pude escucharte.');
     }
   };
@@ -363,7 +381,26 @@ export default function AsistenteVoz({ alCerrar }: { alCerrar: () => void }) {
           ))}
         </div>
 
-        <div className="flex items-center gap-3">
+        {pedirPermiso && (
+          <AvisoPermiso
+            recurso="microfono"
+            bloqueado={permiso === 'denied'}
+            textoCancelar="Prefiero escribir"
+            alPermitir={() => {
+              explicado.current = true;
+              setPedirPermiso(false);
+              if (permisoRef.current === 'denied') permisoRef.current = 'desconocido';
+              setTeclado(false);
+              void oir.current();
+            }}
+            alCancelar={() => {
+              setPedirPermiso(false);
+              setTeclado(true);
+            }}
+          />
+        )}
+
+        <div className={`flex items-center gap-3 ${pedirPermiso ? 'hidden' : ''}`}>
           {conVoz && (
             <button
               type="button"

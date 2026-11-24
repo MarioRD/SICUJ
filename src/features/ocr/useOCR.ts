@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Worker } from 'tesseract.js';
+import { limpiarLineas, prepararImagen } from './preparar';
 
 export type EstadoOCR =
   | { fase: 'inactivo' }
@@ -45,10 +46,19 @@ export function useOCR() {
     async (imagen: File | Blob) => {
       try {
         setEstado({ fase: 'cargando', mensaje: 'Cargando motor de lectura…', progreso: 0 });
-        const w = await obtenerWorker();
-        const { data } = await w.recognize(imagen);
-        const texto = data.text.replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
-        setEstado({ fase: 'listo', texto, confianza: Math.round(data.confidence) });
+        const [w, lienzo] = await Promise.all([obtenerWorker(), prepararImagen(imagen)]);
+        await w.setParameters({
+          tessedit_pageseg_mode: '3' as never, // segmentación automática (carteles con bloques)
+          preserve_interword_spaces: '1',
+          user_defined_dpi: '300',
+          // Solo caracteres que aparecen en carteles en español: evita símbolos inventados
+          tessedit_char_whitelist:
+            'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzÁÉÍÓÚÜÑáéíóúüñ0123456789 .,:;!?¡¿()"\'%$#@&/+-–',
+        });
+        const { data } = await w.recognize(lienzo, {}, { blocks: true, text: true });
+        const lineas = (data.blocks ?? []).flatMap((b) => b.paragraphs.flatMap((pa) => pa.lines));
+        const { texto, confianza } = limpiarLineas(lineas);
+        setEstado({ fase: 'listo', texto, confianza });
         return texto;
       } catch (e) {
         console.error(e);

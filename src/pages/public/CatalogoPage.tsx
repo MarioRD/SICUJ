@@ -115,7 +115,7 @@ export default function CatalogoPage() {
     <div className="flex flex-col gap-8">
       <section
         aria-labelledby="titulo-catalogo"
-        className="portada-historica superficie-oscura -mx-4 -mt-5 flex flex-col overflow-hidden sm:mx-0 sm:mt-0 sm:rounded-2xl"
+        className="portada-historica superficie-oscura flex flex-col overflow-hidden rounded-[1.75rem] sm:rounded-2xl"
       >
         <LucesCandil contenido fuegosCada={4.5} />
         <div className="flex flex-col gap-5 px-5 pt-8 pb-7 sm:px-8 sm:pt-11 lg:px-12 lg:pt-14 lg:pb-11">

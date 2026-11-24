@@ -32,15 +32,15 @@ function MosaicoAccion({ icono, titulo, tono, alAbrir }: { icono: ReactNode; tit
       type="button"
       onClick={alAbrir}
       aria-haspopup="dialog"
-      className="tarjeta group flex min-h-[7.25rem] flex-col justify-between gap-3 p-3.5 text-left transition-[border-color,transform] duration-(--dur-corta) ease-(--curva-liquida) hover:border-marca/40 active:scale-[0.97]"
+      className="tarjeta group flex min-h-[5.75rem] flex-col justify-between gap-3 p-3.5 text-left transition-[border-color,transform] duration-(--dur-corta) ease-(--curva-liquida) hover:border-marca/40 active:scale-[0.97]"
     >
-      <span className={`grid size-9 place-items-center rounded-xl ${tono}`}>{icono}</span>
-      <span className="flex items-center justify-between gap-3">
-        <span className="leading-tight font-bold">{titulo}</span>
+      <span className="flex items-start justify-between gap-2">
+        <span className={`grid size-9 place-items-center rounded-xl ${tono}`}>{icono}</span>
         <span aria-hidden className="grid size-7 shrink-0 place-items-center rounded-full border-2 border-linea transition-[transform,border-color] duration-(--dur-corta) ease-(--curva-liquida) group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:border-marca/50">
           <ArrowUpRight className="size-4" />
         </span>
       </span>
+      <span className="leading-tight font-bold [overflow-wrap:anywhere]">{titulo}</span>
     </button>
   );
 }
@@ -53,17 +53,17 @@ function MosaicoInterruptor({ icono, titulo, activo, alCambiar }: { icono: React
       role="switch"
       aria-checked={activo}
       onClick={() => alCambiar(!activo)}
-      className={`tarjeta flex min-h-[7.25rem] flex-col justify-between gap-3 p-3.5 text-left transition-[background-color,border-color,transform] duration-(--dur-corta) ease-(--curva-liquida) active:scale-[0.97] ${
+      className={`tarjeta flex min-h-[5.75rem] flex-col justify-between gap-3 p-3.5 text-left transition-[background-color,border-color,transform] duration-(--dur-corta) ease-(--curva-liquida) active:scale-[0.97] ${
         activo ? 'border-marca bg-marca text-marca-tinta' : 'hover:border-marca/40'
       }`}
     >
-      <span className={`grid size-9 place-items-center rounded-xl ${activo ? 'bg-blanco/20' : 'bg-marca/10 text-marca'}`}>{icono}</span>
-      <span className="flex items-center justify-between gap-3">
-        <span className="leading-tight font-bold">{titulo}</span>
+      <span className="flex items-start justify-between gap-2">
+        <span className={`grid size-9 place-items-center rounded-xl ${activo ? 'bg-blanco/20' : 'bg-marca/10 text-marca'}`}>{icono}</span>
         <span aria-hidden className={`relative h-7 w-12 shrink-0 rounded-full border-2 transition-[background-color,border-color] duration-(--dur-micro) ${activo ? 'border-blanco/70 bg-blanco/25' : 'border-linea bg-hundido'}`}>
           <span className={`absolute top-0.5 left-0.5 size-5 rounded-full bg-superficie shadow-sm transition-transform duration-(--dur-corta) ease-(--curva-liquida) ${activo ? 'translate-x-5' : 'translate-x-0'}`} />
         </span>
       </span>
+      <span className="leading-tight font-bold [overflow-wrap:anywhere]">{titulo}</span>
     </button>
   );
 }
@@ -77,13 +77,13 @@ export default function AccesibilidadPage() {
   const cambiarVelocidad = (d: number) => cambiar({ velocidadVoz: Math.min(1.6, Math.max(0.6, Math.round((velocidad + d) * 10) / 10)) });
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-3 lg:min-h-[calc(100dvh-14rem)] lg:justify-center">
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-2.5 sm:gap-3 lg:min-h-[calc(100dvh-14rem)] lg:justify-center">
       <header>
         <h1 className="text-3xl leading-tight font-bold">Accesibilidad</h1>
-        <p className="text-tenue">Ajusta la app a tu manera. Los cambios se guardan solos.</p>
+        <p className="text-sm text-tenue sm:text-base">Ajusta la app a tu manera. Los cambios se guardan solos.</p>
       </header>
 
-      <div className="grid grid-cols-2 content-start gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 content-start gap-2.5 sm:gap-3 lg:grid-cols-4">
         <MosaicoInterruptor
           icono={<Moon aria-hidden className="size-5" />}
           titulo="Modo oscuro"

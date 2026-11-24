@@ -1,5 +1,5 @@
 import L from 'leaflet';
-import { ArrowRight, LocateFixed, MapPin, Navigation } from 'lucide-react';
+import { ArrowRight, Hand, LocateFixed, MapPin, Navigation } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import limite from '@/data/limite-coacalco.json';
@@ -68,6 +68,12 @@ export default function MapaCultural({
   const mapa = useRef<L.Map | null>(null);
   const capa = useRef<L.LayerGroup | null>(null);
   const [seleccion, setSeleccion] = useState<string | null>(null);
+  // Pantallas táctiles: el mapa empieza "dormido" para no estorbar al desplazarse por la página.
+  // Primer toque: aviso; segundo toque: se activa. Al salir de la vista se vuelve a dormir.
+  const [tactil] = useState(() => typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches);
+  const [estadoMapa, setEstadoMapa] = useState<'dormido' | 'aviso' | 'activo'>(tactil ? 'dormido' : 'activo');
+  const estadoRef = useRef(estadoMapa);
+  estadoRef.current = estadoMapa;
 
   // Distancias y recinto más cercano
   const conDistancia = useMemo(
@@ -142,6 +148,10 @@ export default function MapaCultural({
     });
     obs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-tema'] });
 
+    m.on('click', () => {
+      if (estadoRef.current === 'dormido') setEstadoMapa('aviso');
+      else if (estadoRef.current === 'aviso') setEstadoMapa('activo');
+    });
     m.on('focus click', () => m.scrollWheelZoom.enable());
     m.on('blur mouseout', () => m.scrollWheelZoom.disable());
     capa.current = L.layerGroup().addTo(m);
@@ -152,6 +162,25 @@ export default function MapaCultural({
       mapa.current = null;
     };
   }, []);
+
+  // Despertar / dormir los gestos del mapa
+  useEffect(() => {
+    const m = mapa.current;
+    if (!m || !tactil) return;
+    const gestos = [m.dragging, m.touchZoom, m.doubleClickZoom];
+    if (estadoMapa === 'activo') gestos.forEach((g) => g.enable());
+    else gestos.forEach((g) => g.disable());
+    if (estadoMapa !== 'aviso') return;
+    const t = setTimeout(() => setEstadoMapa('dormido'), 3200);
+    return () => clearTimeout(t);
+  }, [estadoMapa, tactil]);
+  useEffect(() => {
+    const el = nodo.current;
+    if (!el || !tactil) return;
+    const io = new IntersectionObserver(([e]) => !e?.isIntersecting && setEstadoMapa('dormido'), { threshold: 0.15 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [tactil]);
 
   // Marcadores
   useEffect(() => {
@@ -217,6 +246,21 @@ export default function MapaCultural({
       <Marco activo={marco}>
           <div className={`mapa-cultural ${marco ? 'dispositivo-pantalla' : 'mapa-plano'}`} data-lenis-prevent>
             <div ref={nodo} className="absolute inset-0" aria-label="Mapa de recintos de Coacalco" />
+            {tactil && estadoMapa !== 'activo' && (
+              <div aria-live="polite" className="pointer-events-none absolute inset-x-0 z-[600] flex justify-center px-3" style={{ bottom: marco ? 'calc(var(--corte) + 3.25rem)' : '4.25rem' }}>
+                {estadoMapa === 'aviso' && (
+                  <Vidrio
+                    as="p"
+                    fuerza={12}
+                    bisel={10}
+                    className="flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-bold whitespace-nowrap text-tinta shadow-lg"
+                    style={{ animation: 'entrar-suave 240ms var(--curva-liquida) both' }}
+                  >
+                    <Hand aria-hidden className="size-4 text-marca" /> Toca otra vez para moverlo
+                  </Vidrio>
+                )}
+              </div>
+            )}
 
             {elegido && (
               <Vidrio

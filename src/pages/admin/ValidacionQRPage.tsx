@@ -6,6 +6,7 @@ import { Campo, Selector } from '@/components/ui/Campo';
 import { useAuth } from '@/context/AuthContext';
 import { prepararAudio, sonidoAceptado, sonidoRechazado } from '@/features/qr-scanner/sonidos';
 import { useQrScanner } from '@/features/qr-scanner/useQrScanner';
+import { AvisoPermiso, usePermiso } from '@/components/ui/AvisoPermiso';
 import { useSuscripcion } from '@/hooks/useSuscripcion';
 import { EncabezadoPagina } from '@/layouts/AdminLayout';
 import { suscribirTalleres } from '@/services/talleres.service';
@@ -93,6 +94,8 @@ export default function ValidacionQRPage() {
     else sonidoRechazado();
   }, []);
 
+  const [permisoCamara, setPermisoCamara] = usePermiso('camara');
+  const [pedirCamara, setPedirCamara] = useState(false);
   const scanner = useQrScanner({
     alLeer: async (texto) => {
       if (!usuario) return;
@@ -181,6 +184,8 @@ export default function ValidacionQRPage() {
                 icono={<Camera aria-hidden className="size-5" />}
                 onClick={() => {
                   prepararAudio();
+                  if (permisoCamara !== 'granted' && !pedirCamara) return setPedirCamara(true);
+                  setPedirCamara(false);
                   void scanner.encender();
                 }}
                 disabled={!tallerId}
@@ -193,7 +198,20 @@ export default function ValidacionQRPage() {
               </Boton>
             )}
           </div>
-          {scanner.error && <Alerta tono="error">{scanner.error}</Alerta>}
+          {(pedirCamara || scanner.error?.startsWith('Se negó')) && (
+            <AvisoPermiso
+              recurso="camara"
+              bloqueado={permisoCamara === 'denied' || !!scanner.error?.startsWith('Se negó')}
+              alPermitir={() => {
+                setPedirCamara(false);
+                if (permisoCamara === 'denied') setPermisoCamara('desconocido');
+                prepararAudio();
+                void scanner.encender();
+              }}
+              alCancelar={() => setPedirCamara(false)}
+            />
+          )}
+          {scanner.error && !scanner.error.startsWith('Se negó') && <Alerta tono="error">{scanner.error}</Alerta>}
         </div>
 
         <div className="flex flex-col gap-4">

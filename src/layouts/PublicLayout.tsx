@@ -3,6 +3,7 @@ import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, ScrollRestoration, useLocation } from 'react-router-dom';
 import { SaltarAlContenido } from '@/components/ui/Basicos';
 import { LucesCandil } from '@/components/ui/LucesCandil';
+import { RecargarArrastrando } from '@/components/ui/RecargarArrastrando';
 import { Vidrio } from '@/components/ui/Vidrio';
 import { useAuth } from '@/context/AuthContext';
 import { usePreferencias } from '@/context/PreferenciasContext';
@@ -223,6 +224,7 @@ export function PublicLayout() {
     <div className="flex min-h-dvh flex-col text-base">
       {preferencias.modoOscuro && <LucesCandil />}
       <SaltarAlContenido />
+      <RecargarArrastrando />
       <header className="encabezado-fijo pointer-events-none sticky top-0 z-30" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="banda-rebozo" aria-hidden />
         <div className="contenedor pt-2.5">
@@ -278,14 +280,14 @@ export function PublicLayout() {
       <main
         id="contenido"
         tabIndex={-1}
-        className="contenedor flex-1 pt-5 focus:outline-none lg:pt-8"
-        style={{ paddingBottom: '1.5rem' }}
+        className="contenedor flex-1 pt-4 focus:outline-none lg:pt-8"
+        style={{ paddingBottom: sinPie ? '0.25rem' : '1.5rem' }}
       >
         <Outlet />
       </main>
 
       {sinPie ? (
-        <div aria-hidden className="lg:hidden" style={{ height: 'calc(var(--alto-barra) + 0.5rem)' }} />
+        <div aria-hidden className="lg:hidden" style={{ height: 'calc(var(--alto-barra) + 0.25rem)' }} />
       ) : (
       <footer className="border-t border-linea" style={{ paddingBottom: 'calc(var(--alto-barra) + 0.5rem)' }}>
         <div className="banda-greca h-3 bg-anil opacity-10 [mask-size:22px_12px]" aria-hidden />

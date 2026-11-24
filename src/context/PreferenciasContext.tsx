@@ -39,7 +39,7 @@ export function PreferenciasProvider({ children }: { children: ReactNode }) {
     const html = document.documentElement;
     if (preferencias.modoOscuro) html.dataset.tema = 'oscuro';
     else delete html.dataset.tema;
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', preferencias.modoOscuro ? '#0b1026' : '#263167');
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', preferencias.modoOscuro ? '#0b1026' : '#ffffff');
     if (preferencias.reducirMovimiento) html.dataset.movimiento = 'reducido';
     else delete html.dataset.movimiento;
     html.style.setProperty('--escala-texto', String(ESCALAS[preferencias.tamanoTexto]));
