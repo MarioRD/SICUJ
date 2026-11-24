@@ -4,7 +4,10 @@
     "target": {
       "namespace": "android_app",
       "package_name": "mx.gob.coacalco.sicuj",
-      "sha256_cert_fingerprints": ["D4:4E:6E:1B:C8:FE:7B:8C:E8:9A:75:1D:97:6F:6B:6C:38:0C:68:6C:C3:42:00:57:9D:70:4C:93:2D:A7:CA:5E"]
+      "sha256_cert_fingerprints": [
+        "F6:A9:C2:A8:8C:BB:45:5C:47:64:B1:D6:39:EE:61:C0:01:36:DB:1F:68:BE:05:E1:B0:2D:3C:34:14:95:47:36",
+        "D4:4E:6E:1B:C8:FE:7B:8C:E8:9A:75:1D:97:6F:6B:6C:38:0C:68:6C:C3:42:00:57:9D:70:4C:93:2D:A7:CA:5E"
+      ]
     }
   }
 ]
