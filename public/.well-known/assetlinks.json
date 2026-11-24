@@ -1,0 +1,10 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "mx.gob.coacalco.sicuj",
+      "sha256_cert_fingerprints": ["D4:4E:6E:1B:C8:FE:7B:8C:E8:9A:75:1D:97:6F:6B:6C:38:0C:68:6C:C3:42:00:57:9D:70:4C:93:2D:A7:CA:5E"]
+    }
+  }
+]
