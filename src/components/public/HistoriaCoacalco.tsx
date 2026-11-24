@@ -302,9 +302,9 @@ export function HistoriaCoacalco() {
               <Mural titulo={`Ilustración: ${e.titulo}`}>{e.mural}</Mural>
             </div>
             <div className="flex min-w-0 flex-col gap-1">
-              <p className="w-fit rounded-full bg-mural px-3 py-0.5 text-xs font-semibold text-hueso">{e.cuando}</p>
-              <h3 className="text-xl leading-tight font-bold sm:text-lg">{e.titulo}</h3>
-              <p className="text-base text-tinta sm:text-sm">{e.texto}</p>
+              <p className="w-fit rounded-full bg-mural px-3 py-0.5 text-sm font-semibold sm:text-xs text-hueso">{e.cuando}</p>
+              <h3 className="text-[clamp(1.45rem,1.1rem+1.6vw,1.6rem)] leading-tight font-bold sm:text-lg">{e.titulo}</h3>
+              <p className="text-[clamp(1.05rem,0.95rem+0.6vw,1.15rem)] leading-relaxed text-tinta sm:text-sm">{e.texto}</p>
             </div>
           </li>
         ))}

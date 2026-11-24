@@ -168,11 +168,33 @@ export default function MapaCultural({
     const m = mapa.current;
     if (!m || !tactil) return;
     const gestos = [m.dragging, m.touchZoom, m.doubleClickZoom];
+    const contenedor = m.getContainer();
     if (estadoMapa === 'activo') gestos.forEach((g) => g.enable());
     else gestos.forEach((g) => g.disable());
-    if (estadoMapa !== 'aviso') return;
-    const t = setTimeout(() => setEstadoMapa('dormido'), 3200);
-    return () => clearTimeout(t);
+    // Dormido: el dedo desplaza la página, no el mapa
+    contenedor.style.touchAction = estadoMapa === 'activo' ? '' : 'pan-x pan-y';
+    if (estadoMapa === 'aviso') {
+      const t = setTimeout(() => setEstadoMapa('dormido'), 3200);
+      return () => clearTimeout(t);
+    }
+    if (estadoMapa !== 'activo') return;
+    // Activo: se vuelve a dormir al dejar de usarlo o al tocar fuera, para no atrapar el scroll
+    let t = 0;
+    const reiniciar = () => {
+      clearTimeout(t);
+      t = window.setTimeout(() => setEstadoMapa('dormido'), 4500);
+    };
+    const fuera = (e: PointerEvent) => !contenedor.contains(e.target as Node) && setEstadoMapa('dormido');
+    reiniciar();
+    contenedor.addEventListener('pointerdown', reiniciar);
+    m.on('movestart zoomstart', reiniciar);
+    document.addEventListener('pointerdown', fuera);
+    return () => {
+      clearTimeout(t);
+      contenedor.removeEventListener('pointerdown', reiniciar);
+      m.off('movestart zoomstart', reiniciar);
+      document.removeEventListener('pointerdown', fuera);
+    };
   }, [estadoMapa, tactil]);
   useEffect(() => {
     const el = nodo.current;
@@ -269,8 +291,10 @@ export default function MapaCultural({
                 aria-label={`${etiquetaFicha}: ${elegido.nombre}`}
                 fuerza={12}
                 bisel={10}
-                className={`absolute top-3 left-3 z-[500] flex max-w-[min(78%,17rem)] flex-col gap-1 rounded-2xl p-3.5 ${marco ? 'max-md:top-12' : ''}`}
-                style={{ animation: 'entrar-suave 320ms var(--curva-liquida) both' }}
+                escarcha={8}
+                className={`absolute top-3 left-3 z-[500] flex max-w-[min(78%,17rem)] flex-col gap-1 rounded-2xl p-3.5 shadow-lg ${marco ? 'max-md:top-12' : ''}`}
+                // Más opaca que el resto del vidrio: el mapa de fondo tiene mucho detalle
+                style={{ animation: 'entrar-suave 320ms var(--curva-liquida) both', ['--vidrio-opacidad' as string]: '86%' }}
                 key={elegido.id}
               >
                 <p className="text-xs text-tenue">{etiquetaFicha}</p>

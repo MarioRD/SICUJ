@@ -4,7 +4,7 @@
  *   se procesa en servidores de Google, por eso requiere internet. Firefox no lo tiene.
  * - speechSynthesis: voz del propio dispositivo.
  */
-import { dividirEnFrases, elegirVoz } from '@/features/speech/useSpeech';
+import { dividirEnFrases, elegirVoz, TONO_VOZ } from '@/features/speech/useSpeech';
 
 interface ResultadoReconocimiento {
   isFinal: boolean;
@@ -88,12 +88,28 @@ export function escuchar(alOir?: (provisional: string) => void) {
 
 let turno = 0;
 
+/** Las voces llegan después de cargar la página en varios navegadores: se esperan un momento. */
+function vocesListas(): Promise<void> {
+  const s = window.speechSynthesis;
+  if (s.getVoices().length) return Promise.resolve();
+  return new Promise((listo) => {
+    const fin = () => {
+      s.removeEventListener('voiceschanged', fin);
+      listo();
+    };
+    s.addEventListener('voiceschanged', fin);
+    setTimeout(fin, 900);
+  });
+}
+
 /** Dice el texto en voz alta; la promesa termina al acabar (o al callar). */
-export function decir(texto: string, velocidad = 1): Promise<void> {
-  if (!puedeHablar() || !texto.trim()) return Promise.resolve();
+export async function decir(texto: string, velocidad = 1): Promise<void> {
+  if (!puedeHablar() || !texto.trim()) return;
   const s = window.speechSynthesis;
   s.cancel();
   const id = ++turno;
+  await vocesListas();
+  if (id !== turno) return;
   const frases = dividirEnFrases(texto);
   const voz = elegirVoz();
   return new Promise((resolver) => {
@@ -104,6 +120,7 @@ export function decir(texto: string, velocidad = 1): Promise<void> {
       u.lang = voz?.lang ?? 'es-MX';
       if (voz) u.voice = voz;
       u.rate = velocidad;
+      u.pitch = TONO_VOZ;
       u.onend = siguiente;
       u.onerror = () => resolver();
       s.speak(u);

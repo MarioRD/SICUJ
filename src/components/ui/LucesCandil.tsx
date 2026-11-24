@@ -7,7 +7,11 @@ import { useEffect, useRef } from 'react';
  * - Con movimiento reducido se dibuja un solo cuadro quieto.
  * Los colores se leen de los tokens CSS (--c-amarillo, --c-coral, --c-cielo, --c-blanco).
  */
-export function LucesCandil({ contenido = false, fuegosCada = 9 }: { contenido?: boolean; fuegosCada?: number } = {}) {
+export function LucesCandil({
+  contenido = false,
+  fuegosCada = 9,
+  bienvenida = false,
+}: { contenido?: boolean; fuegosCada?: number; bienvenida?: boolean } = {}) {
   const ref = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -81,7 +85,9 @@ export function LucesCandil({ contenido = false, fuegosCada = 9 }: { contenido?:
 
     let t = 0;
     let previo = 0;
-    let siguienteFuego = 3;
+    let siguienteFuego = bienvenida ? 0.5 : 3;
+    // Bienvenida: una salva de fuegos seguidos al abrir
+    let salva = bienvenida ? 4 : 0;
     let raf = 0;
     const dibujar = (dt: number) => {
       ctx.clearRect(0, 0, w, h);
@@ -119,7 +125,7 @@ export function LucesCandil({ contenido = false, fuegosCada = 9 }: { contenido?:
       siguienteFuego -= dt;
       if (siguienteFuego <= 0) {
         fuego();
-        siguienteFuego = fuegosCada * (0.6 + Math.random() * 0.8);
+        siguienteFuego = salva-- > 0 ? 0.45 + Math.random() * 0.35 : fuegosCada * (0.6 + Math.random() * 0.8);
       }
       dibujar(dt);
     };
@@ -153,7 +159,7 @@ export function LucesCandil({ contenido = false, fuegosCada = 9 }: { contenido?:
       io.disconnect();
       document.removeEventListener('visibilitychange', alVisibilidad);
     };
-  }, [contenido, fuegosCada]);
+  }, [contenido, fuegosCada, bienvenida]);
 
   return <canvas ref={ref} className="cielo-candil" aria-hidden="true" />;
 }

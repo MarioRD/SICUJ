@@ -1,10 +1,11 @@
-import { ArrowRight, LocateFixed, Search, SearchX } from 'lucide-react';
-import { useMemo, useState, type FormEvent } from 'react';
+import { ArrowRight, ChevronDown, LocateFixed, Search, SearchX } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { ComoLlegar, Mapa, puntosDesdeTalleres, type Destino } from '@/components/mapa';
 import { DetalleActividad } from '@/components/public/DetalleActividad';
 import { HistoriaCoacalco } from '@/components/public/HistoriaCoacalco';
 import { TarjetaTaller } from '@/components/public/TarjetaTaller';
-import { ControlSegmentado, TextoRotativo } from '@/components/ui/Animados';
+import { ControlSegmentado } from '@/components/ui/Animados';
+import { TextMorph } from '@/components/ui/TextMorph';
 import { Alerta, Cargando, Vacio } from '@/components/ui/Basicos';
 import { LucesCandil } from '@/components/ui/LucesCandil';
 import { Vidrio } from '@/components/ui/Vidrio';
@@ -111,20 +112,43 @@ export default function CatalogoPage() {
     return [...new Set((presentes.length ? presentes : (['musica', 'danza', 'teatro', 'idiomas'] as Categoria[])).map((c) => CORTO[c] ?? ""))].filter(Boolean);
   }, [talleres]);
 
+  const [bienvenidaMovil] = useState(() => window.matchMedia('(max-width: 39.99rem)').matches);
+  const portada = useRef<HTMLElement>(null);
+
+  // Celular: mientras el menú flota sobre la portada oscura, se pinta en tonos claros
+  useEffect(() => {
+    const el = portada.current;
+    if (!el || !bienvenidaMovil) return;
+    const raiz = document.documentElement;
+    const io = new IntersectionObserver(([e]) => {
+      if (e?.isIntersecting) raiz.dataset.encabezado = 'oscuro';
+      else delete raiz.dataset.encabezado;
+    }, { rootMargin: '0px 0px -88% 0px' });
+    io.observe(el);
+    return () => {
+      io.disconnect();
+      delete raiz.dataset.encabezado;
+    };
+  }, [bienvenidaMovil]);
+
   return (
     <div className="flex flex-col gap-8">
       <section
+        ref={portada}
         aria-labelledby="titulo-catalogo"
-        className="portada-historica superficie-oscura flex flex-col overflow-hidden rounded-[1.75rem] sm:rounded-2xl"
+        className="portada-historica portada-bienvenida superficie-oscura flex flex-col overflow-hidden max-sm:rounded-none sm:rounded-2xl"
       >
-        <LucesCandil contenido fuegosCada={4.5} />
-        <div className="flex flex-col gap-5 px-5 pt-8 pb-7 sm:px-8 sm:pt-11 lg:px-12 lg:pt-14 lg:pb-11">
-          <div className="flex max-w-[36rem] flex-col gap-2">
+        <LucesCandil contenido fuegosCada={4.5} bienvenida={bienvenidaMovil} />
+        <div className="flex flex-col gap-5 px-5 pt-8 pb-7 max-sm:my-auto max-sm:gap-7 max-sm:px-6 sm:px-8 sm:pt-11 lg:px-12 lg:pt-14 lg:pb-11">
+          <div className="flex max-w-[36rem] flex-col gap-2 max-sm:gap-4">
             <h1 id="titulo-catalogo" className="titulo-claro text-(length:--fs-portada) leading-[1.05] font-extrabold">
               Talleres y eventos{' '}
               <span className="mt-1 flex flex-nowrap items-baseline gap-x-[0.3em] whitespace-nowrap">
                 de
-                <TextoRotativo textos={disciplinas} />
+                <span className="rotativo">
+                  <span className="rotativo-fondo" aria-hidden />
+                  <TextMorph words={disciplinas} className="text-anil" />
+                </span>
               </span>
             </h1>
             <p className="text-lg text-blanco/85">Actividades culturales gratuitas en Coacalco. Inscríbete sin crear cuenta.</p>
@@ -146,7 +170,7 @@ export default function CatalogoPage() {
                   setAviso(null);
                 }}
                 enterKeyHint="search"
-                placeholder="Busca: anime, inglés, autos, teatro…"
+                placeholder="Busca: danza, teatro, pintura…"
                 className="min-h-[calc(var(--toque-min)*1.15)] w-full rounded-full bg-transparent pr-14 pl-12 text-base text-blanco placeholder:text-blanco/75 focus:outline-none focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-amarillo"
               />
               <button
@@ -168,6 +192,9 @@ export default function CatalogoPage() {
             </p>
           </search>
         </div>
+        <p aria-hidden className="desliza-aviso sm:hidden">
+          <ChevronDown className="size-5" />
+        </p>
         <div className="banda-greca" aria-hidden />
       </section>
 
@@ -221,7 +248,7 @@ export default function CatalogoPage() {
             {resultados.length} {resultados.length === 1 ? 'actividad' : 'actividades'}
             {orden === 'cercania' && coords ? ', de la más cercana a la más lejana' : ''}
           </p>
-          <div className="rejilla-auto">
+          <div className="rejilla-auto rejilla-actividades">
             {resultados.map(({ taller, distanciaKm }) => (
               <TarjetaTaller key={taller.id} taller={taller} distanciaKm={distanciaKm} alAbrir={setAbierto} />
             ))}

@@ -291,6 +291,8 @@
 
 @layer base {
   html {
+    /* Color de fondo real del lienzo: es lo que se ve detrás de la barra de gestos (Android) */
+    background-color: var(--c-fondo);
     /* Sin el "jalar para recargar" del navegador: usamos uno propio (RecargarArrastrando) */
     overscroll-behavior-y: none;
     -webkit-text-size-adjust: 100%;
@@ -460,6 +462,16 @@
     display: grid;
     gap: calc(var(--sp-unidad) * 5);
     grid-template-columns: repeat(auto-fill, minmax(min(100%, clamp(16rem, 40vmin, 21rem)), 1fr));
+  }
+  .tarjeta-actividad {
+    border-radius: 2rem;
+  }
+  /* Celular: las tarjetas se separan más del borde de la pantalla */
+  @media (max-width: 39.99rem) {
+    .rejilla-actividades {
+      gap: 1.1rem;
+      padding-inline: 0.9rem;
+    }
   }
   /* Celular en horizontal: el encabezado deja de ser fijo para no robar alto útil */
   @media (orientation: landscape) and (max-height: 32rem) {
@@ -733,6 +745,31 @@
     white-space: pre;
     animation: rotativo-entra 520ms var(--curva-liquida) both;
     animation-delay: calc(var(--i) * 25ms);
+  }
+
+  /* ---------------- Text Morph: letras que se transforman ---------------- */
+  .text-morph {
+    display: inline-flex;
+  }
+  .text-morph-caja {
+    position: relative;
+    display: inline-flex;
+    white-space: pre;
+    padding-block-end: 0.08em;
+  }
+  .text-morph-letra,
+  .text-morph-fantasma {
+    display: inline-block;
+    white-space: pre;
+    transform-origin: 50% 80%;
+  }
+  .text-morph-capa {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .text-morph-fantasma {
+    position: absolute;
   }
 
   /* ---------------- Revelado difuso con resaltado ---------------- */
@@ -1099,6 +1136,41 @@
     position: relative;
     z-index: 2;
   }
+  /* Celular: la portada es la bienvenida a pantalla completa, por debajo del menú de vidrio */
+  @media (max-width: 39.99rem) {
+    .portada-bienvenida {
+      /* De borde a borde y desde arriba del todo: el menú de vidrio flota encima */
+      min-block-size: 100svh;
+      margin-block-start: -5.125rem;
+      margin-inline: calc(50% - 50vw);
+      padding-block: 4.5rem calc(var(--alto-barra) - 0.75rem);
+      border-radius: 0;
+    }
+  }
+  /* Mientras el menú flota sobre la portada oscura, sus textos se aclaran */
+  :root[data-encabezado="oscuro"] .encabezado-fijo {
+    --c-tinta: #ffffff;
+    --c-titulo: #ffffff;
+    --c-tenue: rgb(255 255 255 / 0.78);
+    --c-marca: var(--c-amarillo);
+    --c-linea: rgb(255 255 255 / 0.25);
+    --vidrio-tinte: var(--c-noche);
+    --vidrio-opacidad: 30%;
+    --vidrio-borde-luz: 0.3;
+  }
+  .desliza-aviso {
+    display: grid;
+    place-items: center;
+    padding-block-end: 0.5rem;
+    color: rgb(255 255 255 / 0.7);
+    animation: desliza 1.8s ease-in-out infinite;
+  }
+  @keyframes desliza {
+    50% { translate: 0 6px; opacity: 0.4; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .desliza-aviso { animation: none; }
+  }
   .portada-historica > .cielo-candil {
     position: absolute;
     z-index: 0;
@@ -1292,7 +1364,7 @@
     border-radius: 999px;
     background: rgb(0 0 0 / 0.45);
     color: var(--c-hueso);
-    font-size: 0.72rem;
+    font-size: clamp(0.78rem, 0.7rem + 0.3vw, 0.85rem);
     font-weight: 600;
     white-space: nowrap;
   }
@@ -1304,15 +1376,6 @@
       margin-inline: calc(50% - 75vw);
       --hueco: 0.6rem;
     }
-    .mosaico-fecha {
-      font-size: 0.68rem;
-    }
-    .mosaico-titulo {
-      font-size: clamp(1.7rem, 8.4vw, 2.3rem);
-    }
-    .mosaico-sub {
-      font-size: 0.95rem;
-    }
   }
   .mosaico-titulo {
     position: absolute;
@@ -1321,11 +1384,12 @@
     place-content: center;
     text-align: center;
     pointer-events: none;
-    font-size: clamp(1.05rem, 4.4vw, 2.6rem);
+    /* Celular ~2.7rem, escritorio hasta 3.25rem */
+    font-size: clamp(2.6rem, 1.9rem + 3.2vw, 3.25rem);
   }
   .mosaico-sub {
     margin-block-start: 0.4em;
-    font-size: clamp(0.8rem, 1.6vw, 1rem);
+    font-size: clamp(1.05rem, 0.95rem + 0.5vw, 1.25rem);
     opacity: var(--sub, 0);
     translate: 0 calc((1 - var(--sub, 0)) * 8px);
   }
@@ -1933,5 +1997,86 @@
   /* La banda de rebozo ya va en la barra de título */
   .encabezado-fijo > .banda-rebozo {
     display: none;
+  }
+}
+
+/* ---------------- Textos que aparecen al entrar en pantalla ----------------
+   Títulos y su primer párrafo suben y salen de un desenfoque conforme llegan a la vista.
+   Solo con movimiento permitido y donde el navegador tiene línea de tiempo de vista. */
+@keyframes texto-aparece {
+  from {
+    opacity: 0;
+    translate: 0 0.6em;
+    filter: blur(6px);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    :root:not([data-movimiento="reducido"])
+      main
+      :is(h1, h2, h3, :is(h1, h2) + p, .texto-aparece):not(dialog *, .mosaico-titulo *, .boleto *, [popover] *, .tarjeta *, :has(a)) {
+      animation: texto-aparece linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 90%;
+    }
+  }
+}
+
+/* ---------------- Cambio de menú: la página se desliza y la pastilla viaja ----------------
+   Los nombres de transición solo existen durante la transición: un view-transition-name fijo
+   aislaría el fondo y apagaría el vidrio líquido del contenido. */
+.nav-indicador {
+  position: absolute;
+  inset: 0.15rem;
+  z-index: -1;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--c-marca) 13%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--c-marca) 18%, transparent);
+}
+nav a {
+  isolation: isolate;
+}
+html:active-view-transition main {
+  view-transition-name: contenido;
+}
+html:active-view-transition .nav-indicador {
+  view-transition-name: nav-activo;
+}
+@keyframes vt-sale-izq {
+  to { opacity: 0; translate: -18% 0; scale: 0.97; filter: blur(4px); }
+}
+@keyframes vt-sale-der {
+  to { opacity: 0; translate: 18% 0; scale: 0.97; filter: blur(4px); }
+}
+@keyframes vt-entra-der {
+  from { opacity: 0; translate: 22% 0; scale: 0.98; }
+}
+@keyframes vt-entra-izq {
+  from { opacity: 0; translate: -22% 0; scale: 0.98; }
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-group(contenido) {
+    animation-duration: 460ms;
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  ::view-transition-old(contenido) {
+    animation: vt-sale-izq 280ms cubic-bezier(0.4, 0, 1, 1) both;
+  }
+  ::view-transition-new(contenido) {
+    animation: vt-entra-der 460ms cubic-bezier(0.22, 1, 0.36, 1) 60ms both;
+  }
+  html[data-direccion="atras"]::view-transition-old(contenido) {
+    animation-name: vt-sale-der;
+  }
+  html[data-direccion="atras"]::view-transition-new(contenido) {
+    animation-name: vt-entra-izq;
+  }
+  ::view-transition-group(nav-activo) {
+    animation-duration: 520ms;
+    animation-timing-function: cubic-bezier(0.34, 1.36, 0.64, 1);
   }
 }

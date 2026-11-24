@@ -29,17 +29,21 @@ function AyudasFlotantes() {
   const cerrar = () => setAbierta(null);
   return (
     <>
-      <button
+      <Vidrio
+        as="button"
         type="button"
-        popoverTarget="ayudas-flotantes"
+        {...({ popoverTarget: 'ayudas-flotantes' } as object)}
         aria-expanded={desplegado}
         title="Asistente por voz y lector de carteles"
-        className="fixed right-4 z-30 flex items-center gap-2 rounded-full bg-acento p-3.5 text-acento-tinta shadow-[0_12px_28px_-8px_rgb(11_16_38/0.55)] ring-4 ring-superficie/70 transition-[background-color,transform,scale] duration-(--dur-corta) ease-(--curva-liquida) hover:scale-105 hover:bg-acento-hover active:scale-90 lg:right-6 lg:px-5"
-        style={{ bottom: 'calc(var(--alto-barra) + 1rem)' }}
+        fuerza={16}
+        bisel={14}
+        escarcha={3}
+        className="fixed! right-4 z-30 flex items-center gap-2 rounded-full p-3.5 text-acento-tinta shadow-[0_12px_28px_-8px_rgb(11_16_38/0.55)] transition-[transform,scale] duration-(--dur-corta) ease-(--curva-liquida) hover:scale-105 active:scale-90 lg:right-6 lg:px-5"
+        style={{ bottom: 'calc(var(--alto-barra) + 1rem)', ['--vidrio-tinte' as string]: 'var(--c-acento)', ['--vidrio-opacidad' as string]: '72%' }}
       >
         <Sparkles aria-hidden className={`size-7 transition-[rotate] duration-(--dur-corta) ease-(--curva-liquida) lg:size-6 ${desplegado ? 'rotate-45' : ''}`} />
         <span className="sr-only font-bold lg:not-sr-only">Ayuda por voz</span>
-      </button>
+      </Vidrio>
       <div
         id="ayudas-flotantes"
         ref={menu}
@@ -55,10 +59,15 @@ function AyudasFlotantes() {
             ] as const
           ).map(({ q, texto, ayuda, icono: Icono, color }) => (
             <li key={q}>
-              <button
+              <Vidrio
+                as="button"
                 type="button"
                 onClick={() => elegir(q)}
-                className="flex items-center gap-3 rounded-full bg-superficie py-1.5 pr-1.5 pl-5 text-left shadow-[0_12px_28px_-10px_rgb(11_16_38/0.5)] transition-transform duration-(--dur-micro) hover:-translate-x-1 active:scale-95"
+                fuerza={18}
+                bisel={16}
+                escarcha={6}
+                className="flex items-center gap-3 rounded-full py-1.5 pr-1.5 pl-5 text-left text-tinta shadow-[0_12px_28px_-10px_rgb(11_16_38/0.5)] transition-transform duration-(--dur-micro) hover:-translate-x-1 active:scale-95"
+                style={{ ['--vidrio-opacidad' as string]: '62%' }}
               >
                 <span className="flex flex-col leading-tight">
                   <span className="font-bold">{texto}</span>
@@ -67,7 +76,7 @@ function AyudasFlotantes() {
                 <span className={`grid size-12 shrink-0 place-items-center rounded-full ${color}`}>
                   <Icono aria-hidden className="size-6" />
                 </span>
-              </button>
+              </Vidrio>
             </li>
           ))}
         </ul>
@@ -245,7 +254,7 @@ export function PublicLayout() {
   const conSesion = !!usuario;
   const { pathname } = useLocation();
   // Pantallas de herramienta (pases, historial y accesibilidad) van sin pie de página
-  const sinPie = ['/mis-pases', '/pase/', '/accesibilidad', '/historial', '/mis-datos'].some((r) => pathname.startsWith(r));
+  const sinPie = ['/mis-pases', '/pase/', '/accesibilidad', '/historial', '/mis-datos', '/cuenta'].some((r) => pathname.startsWith(r));
   const nav = [
     { a: '/', etiqueta: 'Inicio', icono: Home, fin: true },
     { a: '/recintos', etiqueta: 'Recintos', icono: MapPinned, fin: false },
@@ -253,6 +262,12 @@ export function PublicLayout() {
     ...(conSesion ? [{ a: '/historial', etiqueta: 'Historial', icono: History, fin: false }] : []),
     { a: '/accesibilidad', etiqueta: 'Accesible', icono: Accessibility, fin: false },
   ];
+  // Hacia dónde se desliza la página al cambiar de menú
+  const actual = nav.findIndex((n) => (n.fin ? pathname === n.a : pathname.startsWith(n.a)));
+  const conTransicion = !preferencias.reducirMovimiento;
+  const marcarDireccion = (destino: number) => {
+    document.documentElement.dataset.direccion = actual === -1 || destino > actual ? 'adelante' : 'atras';
+  };
 
   return (
     <div className="flex min-h-dvh flex-col text-base">
@@ -280,19 +295,22 @@ export function PublicLayout() {
 
           <nav aria-label="Navegación principal" className="hidden lg:block">
             <ul className="flex items-center gap-1">
-              {nav.map(({ a, etiqueta, icono: Icono, fin }) => (
+              {nav.map(({ a, etiqueta, icono: Icono, fin }, k) => (
                 <li key={a}>
                   <NavLink
                     to={a}
                     end={fin}
+                    viewTransition={conTransicion}
+                    onClick={() => marcarDireccion(k)}
                     className={({ isActive }) =>
-                      `flex min-h-(--toque-min) items-center gap-2 rounded-full px-4 text-sm font-semibold whitespace-nowrap transition-[background-color,color,transform] duration-(--dur-corta) ease-(--curva-liquida) active:scale-95 ${
+                      `relative flex min-h-(--toque-min) items-center gap-2 rounded-full px-4 text-sm font-semibold whitespace-nowrap transition-[background-color,color,transform] duration-(--dur-corta) ease-(--curva-liquida) active:scale-95 ${
                         isActive ? 'font-bold text-marca' : 'text-tinta hover:bg-marca/8'
                       }`
                     }
                   >
                     {({ isActive }) => (
                       <>
+                        {isActive && <span aria-hidden className="nav-indicador" />}
                         <IconoNav icono={Icono} activo={isActive} className="size-5" />
                         {etiqueta}
                       </>
@@ -334,6 +352,9 @@ export function PublicLayout() {
             <Link to="/aviso-privacidad" className="text-xs font-semibold text-tenue underline underline-offset-4 hover:text-marca">
               Aviso de privacidad
             </Link>
+            <Link to="/terminos" className="text-xs font-semibold text-tenue underline underline-offset-4 hover:text-marca">
+              Términos
+            </Link>
             <span className="bajorrelieve" role="img" aria-label="Firma del autor: 65" title="65">
               <span className="h-9 w-[2.35rem]" style={{ ['--firma' as string]: 'url(/brand/firma-65.png)' }} />
             </span>
@@ -353,19 +374,22 @@ export function PublicLayout() {
       >
         <Vidrio fuerza={26} bisel={22} className="mx-auto max-w-[32rem] rounded-full p-1.5 shadow-lg">
           <ul className="grid" style={{ gridTemplateColumns: `repeat(${nav.length}, minmax(0, 1fr))` }}>
-            {nav.map(({ a, etiqueta, icono: Icono, fin }) => (
+            {nav.map(({ a, etiqueta, icono: Icono, fin }, k) => (
               <li key={a}>
                 <NavLink
                   to={a}
                   end={fin}
+                  viewTransition={conTransicion}
+                  onClick={() => marcarDireccion(k)}
                   className={({ isActive }) =>
-                    `flex min-h-[calc(var(--toque-min)*1.3)] flex-col items-center justify-center gap-0.5 rounded-full text-xs transition-[background-color,color,transform] duration-(--dur-corta) ease-(--curva-liquida) active:scale-90 ${
+                    `relative flex min-h-[calc(var(--toque-min)*1.3)] flex-col items-center justify-center gap-0.5 rounded-full text-xs transition-[background-color,color,transform] duration-(--dur-corta) ease-(--curva-liquida) active:scale-90 ${
                       isActive ? 'font-bold text-marca' : 'font-semibold text-tinta/75'
                     }`
                   }
                 >
                   {({ isActive }) => (
                     <>
+                      {isActive && <span aria-hidden className="nav-indicador" />}
                       <IconoNav icono={Icono} activo={isActive} className="size-[clamp(1.35rem,5.6vmin,1.6rem)]" />
                       {etiqueta}
                     </>

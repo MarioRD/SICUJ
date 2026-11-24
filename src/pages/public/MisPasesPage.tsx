@@ -39,7 +39,7 @@ function FilaPase({ ins, alAbrir }: { ins: Inscripcion; alAbrir: (i: Inscripcion
 }
 
 export default function MisPasesPage() {
-  const { usuario } = useAuth();
+  const { usuario, cargando } = useAuth();
   const uid = usuario?.rol === 'ciudadano' ? usuario.id : null;
   const locales = useMemo(() => pasesLocales(), []);
   const pases = useSuscripcion<Inscripcion[]>((cb) => suscribirMisInscripciones(uid, locales, cb), [uid, locales]);
@@ -54,7 +54,7 @@ export default function MisPasesPage() {
     <div className="flex flex-col gap-5">
       <h1 className="text-3xl font-bold">Mis pases</h1>
 
-      {!uid && (
+      {!usuario && !cargando && (
         <Alerta tono="info">
           <p className="mb-2">
             Estos son los pases guardados <strong>en este dispositivo</strong>. Para verlos en otro dispositivo y consultar tu

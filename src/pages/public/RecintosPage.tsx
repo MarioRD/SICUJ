@@ -95,7 +95,12 @@ export default function RecintosPage() {
           {lista.map((r, i) => {
             const n = actividadesPorRecinto.get(r.id) ?? 0;
             return (
-              <li key={r.id} className="tarjeta group flex flex-col overflow-hidden transition-[box-shadow,transform] duration-(--dur-corta) ease-(--curva) hover:-translate-y-0.5 hover:shadow-lg">
+              <li
+                key={r.id}
+                // Toda la tarjeta abre "Cómo llegar"; el botón sigue siendo el control para teclado
+                onClick={() => setDestino({ nombre: r.nombre, lat: r.ubicacion.lat, lng: r.ubicacion.lng })}
+                className="tarjeta group flex cursor-pointer flex-col overflow-hidden transition-[box-shadow,transform] duration-(--dur-corta) ease-(--curva) hover:-translate-y-0.5 hover:shadow-lg"
+              >
                 {r.imagenUrl ? (
                   <div className="overflow-hidden">
                     <img src={r.imagenUrl} alt="" loading="lazy" className="zoom-imagen aspect-[16/7] w-full object-cover" />

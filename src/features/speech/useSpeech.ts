@@ -32,15 +32,31 @@ export function dividirEnFrases(texto: string, max = 220): string[] {
   return partes;
 }
 
+/** Voces de mejor calidad (neuronales / en línea / mejoradas) que suenan menos robóticas. */
+const NATURALES = /natural|neural|online|premium|enhanced|mejorada|google|siri|wavenet|studio/i;
+const CONOCIDAS = /dalia|jorge|paulina|sabina|elvira|alvaro|helena|monica|paloma|marisol|lupe|camila|valentina/i;
+const ROBOTICAS = /espeak|compact|eloquence|fred|zarvox|albert/i;
+
+/** Elige la voz en español más natural del dispositivo, prefiriendo acento mexicano. */
 export function elegirVoz(): SpeechSynthesisVoice | null {
-  const voces = window.speechSynthesis.getVoices();
-  return (
-    voces.find((v) => v.lang === 'es-MX') ??
-    voces.find((v) => v.lang.startsWith('es-419') || v.lang === 'es-US') ??
-    voces.find((v) => v.lang.startsWith('es')) ??
-    null
-  );
+  const voces = window.speechSynthesis.getVoices().filter((v) => v.lang.toLowerCase().replace('_', '-').startsWith('es'));
+  const puntos = (v: SpeechSynthesisVoice) => {
+    const lang = v.lang.replace('_', '-');
+    let p = 0;
+    if (lang === 'es-MX') p += 40;
+    else if (lang === 'es-US' || lang.startsWith('es-419')) p += 30;
+    else if (lang !== 'es-ES') p += 15;
+    if (NATURALES.test(v.name)) p += 50;
+    if (CONOCIDAS.test(v.name)) p += 10;
+    if (!v.localService) p += 8; // las voces en línea suelen ser neuronales
+    if (ROBOTICAS.test(v.name)) p -= 60;
+    return p;
+  };
+  return voces.sort((a, b) => puntos(b) - puntos(a))[0] ?? null;
 }
+
+/** Ajustes que suavizan el tono de las voces del sistema. */
+export const TONO_VOZ = 1.02;
 
 /** Lectura en voz alta con la Web Speech API (funciona sin internet en la mayoría de los dispositivos). */
 export function useSpeech(velocidad = 1) {
@@ -75,6 +91,7 @@ export function useSpeech(velocidad = 1) {
         u.lang = voz?.lang ?? 'es-MX';
         if (voz) u.voice = voz;
         u.rate = velocidad;
+        u.pitch = TONO_VOZ;
         u.onend = siguiente;
         u.onerror = (e) => {
           if (e.error !== 'interrupted' && e.error !== 'canceled') setEstado('detenido');

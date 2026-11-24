@@ -38,6 +38,7 @@ export const router = createBrowserRouter([
       { path: 'historial', element: diferida(() => import('@/pages/public/HistorialPage')) },
       { path: 'mis-datos', element: diferida(() => import('@/pages/public/MisDatosPage')) },
       { path: 'aviso-privacidad', element: diferida(() => import('@/pages/public/AvisoPrivacidadPage')) },
+      { path: 'terminos', element: diferida(() => import('@/pages/public/TerminosPage')) },
     ],
   },
   { path: '/admin/login', element: diferida(() => import('@/pages/admin/LoginPage')) },

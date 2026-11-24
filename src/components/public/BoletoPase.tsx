@@ -167,7 +167,7 @@ export function BoletoPase({ inscripcion, alCerrar }: { inscripcion: Inscripcion
       }}
       onClick={(e) => e.target === e.currentTarget && salir()}
     >
-      <div className="grid min-h-full place-items-center p-4 py-10" onClick={(e) => e.target === e.currentTarget && salir()}>
+      <div className="grid min-h-full place-items-center p-3 py-6 sm:p-4 sm:py-10" onClick={(e) => e.target === e.currentTarget && salir()}>
         <Vidrio
           as="button"
           type="button"
@@ -188,8 +188,8 @@ export function BoletoPase({ inscripcion, alCerrar }: { inscripcion: Inscripcion
             style={{ ['--giro' as string]: horizontal ? '-2deg' : '-1.4deg' }}
           >
             {/* Cuerpo: el QR ocupa el lugar de la imagen */}
-            <div className={`boleto-parte boleto-cuerpo flex flex-col gap-4 p-[18px] ${horizontal ? 'flex-1' : ''}`}>
-              <div className={`portada-agua boleto-medio relative grid place-items-center ${horizontal ? 'min-h-[18rem]' : 'aspect-square'}`}>
+            <div className={`boleto-parte boleto-cuerpo flex flex-col gap-3 p-[16px] sm:gap-4 sm:p-[18px] ${horizontal ? 'flex-1' : ''}`}>
+              <div className={`portada-agua boleto-medio relative grid place-items-center ${horizontal ? 'min-h-[18rem]' : 'aspect-[6/5]'}`}>
                 <span className="vidrio absolute top-3 left-3 rounded-full px-3 py-1 text-sm font-semibold text-blanco">Folio {folio}</span>
                 <div className={`rounded-2xl bg-blanco p-3 shadow-lg ${usado ? 'opacity-40' : ''}`}>
                   <QRCodeSVG
@@ -198,7 +198,7 @@ export function BoletoPase({ inscripcion, alCerrar }: { inscripcion: Inscripcion
                     level="M"
                     marginSize={1}
                     title={`Código QR del pase ${folio}`}
-                    className="h-auto w-[min(56vw,13rem)]"
+                    className="h-auto w-[min(46vw,11.5rem)]"
                   />
                 </div>
                 <div className="banda-greca absolute inset-x-0 bottom-0" aria-hidden />
@@ -225,7 +225,7 @@ export function BoletoPase({ inscripcion, alCerrar }: { inscripcion: Inscripcion
             {/* Talón: se arrastra para desprenderlo */}
             <div
               ref={talon}
-              className={`boleto-parte boleto-talon flex flex-col gap-3 p-[18px] ${horizontal ? 'w-[19rem] shrink-0' : ''} ${fase === 'rompiendo' || fase === 'confirmar' || fase === 'cancelando' ? 'cayendo' : ''}`}
+              className={`boleto-parte boleto-talon flex flex-col gap-2.5 p-[16px] sm:gap-3 sm:p-[18px] ${horizontal ? 'w-[19rem] shrink-0' : ''} ${fase === 'rompiendo' || fase === 'confirmar' || fase === 'cancelando' ? 'cayendo' : ''}`}
               style={{ ['--origen-talon' as string]: horizontal ? '0% 100%' : '100% 0%' }}
               aria-disabled={usado || undefined}
               onPointerDown={alBajar}
@@ -243,17 +243,18 @@ export function BoletoPase({ inscripcion, alCerrar }: { inscripcion: Inscripcion
                     <strong>{inscripcion.personas === 1 ? '1 persona' : `${inscripcion.personas} personas`}</strong>: {personas}
                   </dd>
                 </div>
-                <div className="flex items-start gap-2">
+                <div className={`items-start gap-2 ${horizontal ? 'flex' : 'hidden'}`}>
                   <Clock aria-hidden className="mt-0.5 size-4 shrink-0 text-tenue" />
                   <dt className="solo-lectores">Horario</dt>
                   <dd>{inscripcion.tallerHorario}</dd>
                 </div>
-                <div className="flex items-start gap-2">
+                <div className={`items-start gap-2 ${horizontal ? 'flex' : 'hidden'}`}>
                   <MapPin aria-hidden className="mt-0.5 size-4 shrink-0 text-tenue" />
                   <dt className="solo-lectores">Lugar</dt>
                   <dd>{inscripcion.recintoNombre}</dd>
                 </div>
               </dl>
+              <div className="flex flex-wrap items-center justify-between gap-2">
               <p className="font-mono text-2xl font-bold tracking-wider" aria-label={`Folio ${folio.split('').join(' ')}`}>
                 {folio}
               </p>
@@ -268,13 +269,14 @@ export function BoletoPase({ inscripcion, alCerrar }: { inscripcion: Inscripcion
                   ¿Cómo llegar?
                 </Boton>
               )}
+              </div>
               {usado ? (
                 <p className="mt-auto flex items-center gap-2 rounded-lg bg-ok-fondo p-3 text-sm font-semibold text-ok">
                   <CheckCircle2 aria-hidden className="size-5 shrink-0" /> Usado el {formatearFechaHora(inscripcion.usadoEn!)}
                 </p>
               ) : (
                 <>
-                  <p className="text-sm text-tenue">Muestra el código en la entrada y sube el brillo de tu pantalla.</p>
+                  <p className="text-sm text-tenue">Muestra el código en la entrada con el brillo alto.</p>
                   <div className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-1">
                     <span className="flex min-w-0 flex-1 items-center gap-1.5 text-xs font-semibold text-tenue">
                       <Scissors aria-hidden className="size-4" /> Arrastra el talón para cancelar

@@ -9,7 +9,8 @@
  */
 import type { ReactNode } from 'react';
 
-export const AVISO_VERSION = 'Borrador 0.1 · noviembre 2026';
+export const FECHA_DOCUMENTOS = '20 de noviembre de 2026';
+export const AVISO_VERSION = FECHA_DOCUMENTOS;
 
 const RESPONSABLE = 'H. Ayuntamiento de Coacalco de Berriozábal, a través de la Dirección de Cultura y Juventud';
 const DOMICILIO = '[Domicilio oficial del Palacio Municipal o de la Dirección]';
@@ -27,7 +28,7 @@ function Seccion({ titulo, children }: { titulo: string; children: ReactNode }) 
 export function AvisoProvisional() {
   return (
     <p className="rounded-lg border-l-4 border-aviso bg-aviso-fondo p-3 text-sm">
-      <strong>Documento provisional ({AVISO_VERSION}).</strong> Pendiente de validación por el área jurídica y la Unidad de
+      <strong>Versión del {AVISO_VERSION}.</strong> Documento provisional, pendiente de validación por el área jurídica y la Unidad de
       Transparencia municipal.
     </p>
   );

@@ -502,7 +502,11 @@ export default function InscripcionPage() {
                 He leído y acepto el{' '}
                 <button type="button" onClick={() => setVerAviso(true)} className="font-semibold text-marca underline">
                   aviso de privacidad
-                </button>
+                </button>{' '}
+                y los{' '}
+                <Link to="/terminos" target="_blank" className="font-semibold text-marca underline">
+                  términos y condiciones<span className="solo-lectores"> (se abre en otra pestaña)</span>
+                </Link>
                 .
               </>
             }
