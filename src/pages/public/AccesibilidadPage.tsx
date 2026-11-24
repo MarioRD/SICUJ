@@ -1,40 +1,56 @@
-import { Camera, Contrast, ImageUp, RotateCcw, ScanText, Type } from 'lucide-react';
-import { useEffect, useRef, useState, type ChangeEvent } from 'react';
+import { Camera, ChevronRight, Gauge, ImageUp, Minus, Moon, Plus, RotateCcw, ScanText, Type, Wind } from 'lucide-react';
+import { useEffect, useRef, useState, type ChangeEvent, type ReactNode } from 'react';
 import { Alerta } from '@/components/ui/Basicos';
 import { Boton } from '@/components/ui/Boton';
 import { AreaTexto } from '@/components/ui/Campo';
+import { ModalVidrio } from '@/components/ui/ModalVidrio';
 import { BotonLeer } from '@/components/public/BotonLeer';
 import { usePreferencias, type TamanoTexto } from '@/context/PreferenciasContext';
 import { useOCR } from '@/features/ocr/useOCR';
 
-const TAMANOS: Array<{ v: TamanoTexto; t: string }> = [
-  { v: 'normal', t: 'Normal' },
-  { v: 'grande', t: 'Grande' },
-  { v: 'muy_grande', t: 'Muy grande' },
+const TAMANOS: Array<{ v: TamanoTexto; t: string; escala: string }> = [
+  { v: 'normal', t: 'Normal', escala: 'text-base' },
+  { v: 'grande', t: 'Grande', escala: 'text-xl' },
+  { v: 'muy_grande', t: 'Muy grande', escala: 'text-2xl' },
 ];
 
-function Interruptor({ activo, alCambiar, etiqueta, descripcion }: { activo: boolean; alCambiar: (v: boolean) => void; etiqueta: string; descripcion: string }) {
+/** Mosaico de ajuste: ícono grande, nombre corto y el control. */
+function Mosaico({ icono, titulo, children, className = '' }: { icono: ReactNode; titulo: string; children: ReactNode; className?: string }) {
+  return (
+    <div className={`tarjeta flex flex-col gap-3 p-4 ${className}`}>
+      <p className="flex items-center gap-2.5 font-bold">
+        <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-marca/10 text-marca">{icono}</span>
+        {titulo}
+      </p>
+      {children}
+    </div>
+  );
+}
+
+/** Interruptor grande: todo el mosaico se toca. */
+function MosaicoInterruptor({ icono, titulo, activo, alCambiar }: { icono: ReactNode; titulo: string; activo: boolean; alCambiar: (v: boolean) => void }) {
   return (
     <button
       type="button"
       role="switch"
       aria-checked={activo}
       onClick={() => alCambiar(!activo)}
-      className="flex min-h-(--toque-min) w-full items-center justify-between gap-4 text-left"
+      className={`tarjeta flex flex-col justify-between gap-3 p-4 text-left transition-[background-color,border-color,transform] duration-(--dur-corta) ease-(--curva-liquida) active:scale-[0.97] ${
+        activo ? 'border-marca bg-marca text-marca-tinta' : 'hover:border-marca/40'
+      }`}
     >
-      <span>
-        <span className="block font-semibold">{etiqueta}</span>
-        <span className="block text-sm text-tenue">{descripcion}</span>
-      </span>
-      <span aria-hidden className={`relative h-8 w-14 shrink-0 rounded-full border-2 transition ${activo ? 'border-marca bg-marca' : 'border-linea bg-tinta/15'}`}>
-        <span className={`absolute top-0.5 size-6 rounded-full bg-superficie shadow transition-all ${activo ? 'left-6.5' : 'left-0.5'}`} />
+      <span className={`grid size-9 place-items-center rounded-xl ${activo ? 'bg-blanco/20' : 'bg-marca/10 text-marca'}`}>{icono}</span>
+      <span className="flex items-center justify-between gap-3">
+        <span className="leading-tight font-bold">{titulo}</span>
+        <span aria-hidden className={`relative h-7 w-12 shrink-0 rounded-full border-2 transition-[background-color,border-color] duration-(--dur-micro) ${activo ? 'border-blanco/70 bg-blanco/25' : 'border-linea bg-hundido'}`}>
+          <span className={`absolute top-0.5 left-0.5 size-5 rounded-full bg-superficie shadow-sm transition-transform duration-(--dur-corta) ease-(--curva-liquida) ${activo ? 'translate-x-5' : 'translate-x-0'}`} />
+        </span>
       </span>
     </button>
   );
 }
 
-export default function AccesibilidadPage() {
-  const { preferencias, cambiar } = usePreferencias();
+function LectorCarteles({ alCerrar }: { alCerrar: () => void }) {
   const { estado, leer, reiniciar } = useOCR();
   const [vistaPrevia, setVistaPrevia] = useState<string | null>(null);
   const [texto, setTexto] = useState('');
@@ -59,72 +75,13 @@ export default function AccesibilidadPage() {
   const progreso = estado.fase === 'leyendo' ? estado.progreso : estado.fase === 'cargando' ? estado.progreso : 0;
 
   return (
-    <div className="flex flex-col gap-6">
-      <header>
-        <h1 className="text-3xl font-bold">Accesibilidad</h1>
-        <p className="text-tenue">Ajusta la aplicación a tus necesidades.</p>
-      </header>
-
-      <section aria-labelledby="t-ajustes" className="tarjeta flex flex-col gap-4 p-4">
-        <h2 id="t-ajustes" className="flex items-center gap-2 text-xl font-bold">
-          <Contrast aria-hidden className="size-5" /> Visualización
-        </h2>
-        <Interruptor
-          activo={preferencias.altoContraste}
-          alCambiar={(v) => cambiar({ altoContraste: v })}
-          etiqueta="Alto contraste"
-          descripcion="Fondo negro con texto blanco y amarillo."
-        />
-        <Interruptor
-          activo={preferencias.reducirMovimiento}
-          alCambiar={(v) => cambiar({ reducirMovimiento: v })}
-          etiqueta="Reducir animaciones"
-          descripcion="Quita transiciones y movimientos."
-        />
-        <fieldset className="flex flex-col gap-2">
-          <legend className="mb-2 flex items-center gap-2 font-semibold">
-            <Type aria-hidden className="size-4" /> Tamaño del texto
-          </legend>
-          <div className="grid grid-cols-3 gap-2">
-            {TAMANOS.map(({ v, t }) => (
-              <label
-                key={v}
-                className={`toque flex cursor-pointer items-center justify-center rounded-lg border-2 px-2 text-center text-sm font-bold has-focus-visible:outline-3 has-focus-visible:outline-(--c-foco) ${
-                  preferencias.tamanoTexto === v ? 'border-marca bg-marca text-marca-tinta' : 'border-linea'
-                }`}
-              >
-                <input type="radio" name="tamano" value={v} checked={preferencias.tamanoTexto === v} onChange={() => cambiar({ tamanoTexto: v })} className="sr-only" />
-                {t}
-              </label>
-            ))}
-          </div>
-        </fieldset>
-        <div className="flex flex-col gap-2">
-          <label htmlFor="velocidad" className="font-semibold">
-            Velocidad de lectura en voz alta: {preferencias.velocidadVoz.toFixed(1)}×
-          </label>
-          <input
-            id="velocidad"
-            type="range"
-            min={0.6}
-            max={1.6}
-            step={0.1}
-            value={preferencias.velocidadVoz}
-            onChange={(e) => cambiar({ velocidadVoz: Number(e.target.value) })}
-            className="w-full accent-(--c-marca)"
-          />
-        </div>
-      </section>
-
-      <section aria-labelledby="t-ocr" className="tarjeta flex flex-col gap-4 p-4">
+    <ModalVidrio alCerrar={alCerrar} etiquetadoPor="t-ocr" ancho="min(94vw, 34rem)">
+      <section className="tarjeta flex flex-col gap-4 p-5 shadow-2xl">
         <div>
-          <h2 id="t-ocr" className="flex items-center gap-2 text-xl font-bold">
-            <ScanText aria-hidden className="size-5" /> Leer un cartel en voz alta
+          <h2 id="t-ocr" className="flex items-center gap-2 text-2xl font-bold">
+            <ScanText aria-hidden className="size-6" /> Leer un cartel en voz alta
           </h2>
-          <p className="text-sm text-tenue">
-            Toma una foto de un cartel o convocatoria: extraemos el texto y te lo leemos. La imagen se procesa en tu
-            teléfono y no se envía a ningún lado.
-          </p>
+          <p className="mt-1 text-tenue">Toma una foto del cartel: sacamos el texto y te lo leemos. La foto no sale de tu teléfono.</p>
         </div>
 
         <input ref={inputCamara} type="file" accept="image/*" capture="environment" className="sr-only" onChange={alElegir} tabIndex={-1} aria-hidden />
@@ -138,7 +95,7 @@ export default function AccesibilidadPage() {
           </Boton>
         </div>
 
-        {vistaPrevia && <img src={vistaPrevia} alt="Imagen seleccionada" className="max-h-[40vh] w-full rounded-lg object-contain bg-fondo" />}
+        {vistaPrevia && <img src={vistaPrevia} alt="Imagen seleccionada" className="max-h-[28vh] w-full rounded-lg bg-hundido object-contain" />}
 
         {ocupado && (
           <div role="status" className="flex flex-col gap-2">
@@ -155,11 +112,11 @@ export default function AccesibilidadPage() {
                 <p className="text-sm text-tenue" role="status">
                   Texto encontrado (confianza {estado.confianza}%). Puedes corregirlo antes de escucharlo.
                 </p>
-                <AreaTexto etiqueta="Texto extraído" rows={8} value={texto} onChange={(e) => setTexto(e.target.value)} />
+                <AreaTexto etiqueta="Texto extraído" rows={5} value={texto} onChange={(e) => setTexto(e.target.value)} />
                 <BotonLeer texto={texto} etiqueta="Leer en voz alta" />
               </>
             ) : (
-              <Alerta>No encontramos texto. Intenta acercarte más al cartel y con buena luz.</Alerta>
+              <Alerta>No encontramos texto. Acércate más al cartel y busca buena luz.</Alerta>
             )}
             <Boton
               variante="fantasma"
@@ -176,6 +133,92 @@ export default function AccesibilidadPage() {
           </div>
         )}
       </section>
+    </ModalVidrio>
+  );
+}
+
+/** Menú de accesibilidad en una sola pantalla: mosaicos grandes, sin desplazarse. */
+export default function AccesibilidadPage() {
+  const { preferencias, cambiar } = usePreferencias();
+  const [lector, setLector] = useState(false);
+  const velocidad = preferencias.velocidadVoz;
+  const cambiarVelocidad = (d: number) => cambiar({ velocidadVoz: Math.min(1.6, Math.max(0.6, Math.round((velocidad + d) * 10) / 10)) });
+
+  return (
+    <div className="flex flex-col gap-4">
+      <header>
+        <h1 className="text-3xl leading-tight font-bold">Accesibilidad</h1>
+        <p className="text-tenue">Ajusta la app a tu manera. Los cambios se guardan solos.</p>
+      </header>
+
+      <div className="grid grid-cols-2 content-start gap-3 lg:grid-cols-4">
+        <MosaicoInterruptor
+          icono={<Moon aria-hidden className="size-5" />}
+          titulo="Modo oscuro"
+          activo={preferencias.modoOscuro}
+          alCambiar={(v) => cambiar({ modoOscuro: v })}
+        />
+        <MosaicoInterruptor
+          icono={<Wind aria-hidden className="size-5" />}
+          titulo="Menos animaciones"
+          activo={preferencias.reducirMovimiento}
+          alCambiar={(v) => cambiar({ reducirMovimiento: v })}
+        />
+
+        <Mosaico icono={<Type aria-hidden className="size-5" />} titulo="Tamaño del texto" className="col-span-2">
+          <div role="radiogroup" aria-label="Tamaño del texto" className="grid grid-cols-3 gap-2">
+            {TAMANOS.map(({ v, t, escala }) => {
+              const activo = preferencias.tamanoTexto === v;
+              return (
+                <button
+                  key={v}
+                  type="button"
+                  role="radio"
+                  aria-checked={activo}
+                  onClick={() => cambiar({ tamanoTexto: v })}
+                  className={`toque flex flex-col items-center justify-center rounded-xl border-2 px-2 py-1 transition-[background-color,border-color,transform] duration-(--dur-corta) ease-(--curva-liquida) active:scale-95 ${
+                    activo ? 'border-marca bg-marca text-marca-tinta' : 'border-linea hover:border-marca/40'
+                  }`}
+                >
+                  <span aria-hidden className={`fuente-display leading-none font-bold ${escala}`}>
+                    Aa
+                  </span>
+                  <span className="text-xs font-semibold">{t}</span>
+                </button>
+              );
+            })}
+          </div>
+        </Mosaico>
+
+        <Mosaico icono={<Gauge aria-hidden className="size-5" />} titulo="Velocidad de la voz" className="col-span-2">
+          <div className="flex items-center justify-between gap-3">
+            <Boton variante="secundario" onClick={() => cambiarVelocidad(-0.1)} disabled={velocidad <= 0.6} aria-label="Más lenta" icono={<Minus aria-hidden className="size-5" />} />
+            <p className="text-center" aria-live="polite">
+              <span className="fuente-display block text-3xl leading-none font-bold">{velocidad.toFixed(1)}×</span>
+              <span className="text-sm text-tenue">{velocidad < 0.95 ? 'Lenta' : velocidad > 1.15 ? 'Rápida' : 'Normal'}</span>
+            </p>
+            <Boton variante="secundario" onClick={() => cambiarVelocidad(0.1)} disabled={velocidad >= 1.6} aria-label="Más rápida" icono={<Plus aria-hidden className="size-5" />} />
+          </div>
+        </Mosaico>
+
+        <button
+          type="button"
+          onClick={() => setLector(true)}
+          aria-haspopup="dialog"
+          className="tarjeta group col-span-2 flex items-center gap-4 p-4 text-left transition-[box-shadow,transform] duration-(--dur-corta) ease-(--curva-liquida) hover:-translate-y-0.5 hover:shadow-lg active:scale-[0.98] lg:col-span-2"
+        >
+          <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-acento text-acento-tinta">
+            <ScanText aria-hidden className="size-6" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-lg leading-tight font-bold">Leer un cartel en voz alta</span>
+            <span className="block text-sm text-tenue">Toma una foto y te leemos el texto.</span>
+          </span>
+          <ChevronRight aria-hidden className="size-5 shrink-0 text-tenue transition-transform duration-(--dur-corta) group-hover:translate-x-1" />
+        </button>
+      </div>
+
+      {lector && <LectorCarteles alCerrar={() => setLector(false)} />}
     </div>
   );
 }

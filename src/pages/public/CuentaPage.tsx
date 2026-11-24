@@ -1,12 +1,11 @@
-import { LogOut, UserRound } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { Alerta } from '@/components/ui/Basicos';
-import { Boton, EnlaceBoton } from '@/components/ui/Boton';
+import { Boton } from '@/components/ui/Boton';
 import { Campo } from '@/components/ui/Campo';
 import { useAuth } from '@/context/AuthContext';
 import { useAvisos } from '@/context/AvisosContext';
-import { cerrarSesion, iniciarSesion, registrarCiudadano } from '@/services/auth.service';
+import { iniciarSesion, registrarCiudadano } from '@/services/auth.service';
 import { pasesLocales, vincularInscripciones } from '@/services/inscripciones.service';
 
 /** Cuenta ciudadana OPCIONAL: sirve para ver los pases en cualquier dispositivo y el historial. */
@@ -20,29 +19,8 @@ export default function CuentaPage() {
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
 
-  if (usuario) {
-    return (
-      <div className="flex flex-col gap-5">
-        <h1 className="text-3xl font-bold">Mi cuenta</h1>
-        <div className="tarjeta flex items-center gap-4 p-4">
-          <div className="grid size-14 place-items-center rounded-full bg-marca text-marca-tinta">
-            <UserRound aria-hidden className="size-7" />
-          </div>
-          <div className="min-w-0">
-            <p className="text-lg font-bold">{usuario.nombre}</p>
-            <p className="truncate text-sm text-tenue">{usuario.email}</p>
-          </div>
-        </div>
-        <EnlaceBoton to="/mis-pases" tamano="lg">
-          Ver mis pases e historial
-        </EnlaceBoton>
-        {usuario.rol !== 'ciudadano' && <EnlaceBoton to="/admin" variante="secundario">Ir al panel administrativo</EnlaceBoton>}
-        <Boton variante="fantasma" icono={<LogOut aria-hidden className="size-5" />} onClick={() => cerrarSesion()}>
-          Cerrar sesión
-        </Boton>
-      </div>
-    );
-  }
+  // Con sesión iniciada ya no hay panel aparte: sus datos viven en las pestañas Mis pases e Historial
+  if (usuario) return <Navigate to="/mis-pases" replace />;
 
   const enviar = async (e: FormEvent) => {
     e.preventDefault();

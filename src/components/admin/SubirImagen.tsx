@@ -44,7 +44,7 @@ export function SubirImagen({ valor, alCambiar, etiqueta = 'Imagen de portada' }
         {etiqueta} <span className="font-normal text-tenue">(opcional; se convierte a WebP automáticamente)</span>
       </span>
       <div className="flex items-center gap-4">
-        <div className="grid aspect-[16/9] w-[clamp(9rem,14vw,14rem)] shrink-0 place-items-center overflow-hidden rounded-md border-2 border-dashed border-linea bg-fondo">
+        <div className="grid aspect-[16/9] w-[clamp(9rem,14vw,14rem)] shrink-0 place-items-center overflow-hidden rounded-md border-2 border-dashed border-linea bg-hundido">
           {valor ? <img src={valor} alt="Vista previa" className="size-full object-cover" /> : <ImagePlus aria-hidden className="size-8 text-tenue" />}
         </div>
         <div className="flex flex-col gap-2">

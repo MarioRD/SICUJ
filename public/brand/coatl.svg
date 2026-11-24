@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Coacalco: "en la casa de la serpiente". Glifo original: serpiente (cóatl) sobre una casa (calli). -->
+  <defs>
+    <mask id="hueco" maskUnits="userSpaceOnUse">
+      <rect width="400" height="400" fill="white"/>
+      <path d="M96 352C62 300 58 232 108 202C158 172 228 206 262 170C284 146 270 116 288 104" stroke="black" stroke-width="20"/>
+    </mask>
+  </defs>
+  <!-- cuerpo: contorno doble -->
+  <path d="M96 352C62 300 58 232 108 202C158 172 228 206 262 170C284 146 270 116 288 104" stroke-width="30" mask="url(#hueco)"/>
+  <!-- escamas ventrales -->
+  <path d="M96 352C62 300 58 232 108 202C158 172 228 206 262 170C284 146 270 116 288 104" stroke-width="18" stroke-dasharray="2 13" stroke-linecap="butt"/>
+  <!-- cascabel -->
+  <path d="M90 360L104 368M84 368L98 376M80 377L92 384" stroke-width="5"/>
+  <!-- cabeza estilo códice: hocico enroscado, ojo con ceja, colmillos, penacho -->
+  <path d="M278 92C282 66 312 52 342 56C362 58 374 70 370 84C368 93 357 94 353 86C346 92 324 94 306 102" stroke-width="5"/>
+  <path d="M298 114C320 113 346 119 358 136C350 143 335 137 326 130C315 123 302 121 290 120" stroke-width="5"/>
+  <path d="M326 96L331 108M340 94L344 105M334 128L337 119" stroke-width="4"/>
+  <circle cx="318" cy="76" r="8" stroke-width="4"/>
+  <circle cx="319" cy="77" r="2.5" fill="black" stroke="none"/>
+  <path d="M300 66C306 52 326 48 336 57C340 61 336 68 329 66" stroke-width="4"/>
+  <path d="M330 112C350 112 366 110 384 112M376 112L392 102M376 112L392 122" stroke-width="4"/>
+  <path d="M276 96L292 114" stroke-width="5"/>
+  <path d="M290 74C274 58 276 36 294 26M300 64C292 44 302 26 320 20M312 58C314 42 330 32 346 34" stroke-width="4"/>
+  <circle cx="294" cy="26" r="4" stroke-width="3"/>
+  <circle cx="320" cy="20" r="4" stroke-width="3"/>
+  <circle cx="346" cy="34" r="4" stroke-width="3"/>
+  <!-- calli: la casa con almenas -->
+  <path d="M120 360V272H290V360" stroke-width="5"/>
+  <path d="M176 360V308H234V360" stroke-width="5"/>
+  <path d="M120 292H290" stroke-width="4"/>
+  <path d="M110 272L126 244H284L300 272" stroke-width="5"/>
+  <path d="M140 244V230H160V244M195 244V230H215V244M250 244V230H270V244" stroke-width="5"/>
+  <circle cx="146" cy="282" r="3" fill="black" stroke="none"/>
+  <circle cx="178" cy="282" r="3" fill="black" stroke="none"/>
+  <circle cx="232" cy="282" r="3" fill="black" stroke="none"/>
+  <circle cx="264" cy="282" r="3" fill="black" stroke="none"/>
+  <path d="M100 360H310" stroke-width="5"/>
+</svg>

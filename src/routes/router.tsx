@@ -35,6 +35,7 @@ export const router = createBrowserRouter([
       { path: 'recintos', element: diferida(() => import('@/pages/public/RecintosPage')) },
       { path: 'accesibilidad', element: diferida(() => import('@/pages/public/AccesibilidadPage')) },
       { path: 'cuenta', element: diferida(() => import('@/pages/public/CuentaPage')) },
+      { path: 'historial', element: diferida(() => import('@/pages/public/HistorialPage')) },
       { path: 'aviso-privacidad', element: diferida(() => import('@/pages/public/AvisoPrivacidadPage')) },
     ],
   },

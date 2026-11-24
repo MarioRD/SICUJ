@@ -1,7 +1,7 @@
 import { useId, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from 'react';
 
 const CONTROL =
-  'w-full rounded-md border-2 border-linea bg-superficie px-3 text-base text-tinta placeholder:text-tenue/70 focus:border-marca focus:outline-none aria-invalid:border-error min-h-(--toque-min)';
+  'w-full rounded-lg border-2 border-linea bg-superficie px-3.5 text-base text-tinta placeholder:text-tenue/70 transition-[border-color,box-shadow] duration-(--dur-micro) hover:border-marca/40 focus:border-marca focus:shadow-[0_0_0_4px_color-mix(in_oklab,var(--c-azul)_18%,transparent)] focus:outline-none aria-invalid:border-error min-h-(--toque-min)';
 
 interface Base {
   etiqueta: string;

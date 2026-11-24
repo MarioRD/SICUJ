@@ -5,7 +5,18 @@
  * que las páginas y componentes no cambian.
  */
 
-export type Categoria = 'musica' | 'danza' | 'artes_plasticas' | 'teatro' | 'literatura' | 'juventud' | 'otro';
+export type Categoria =
+  | 'musica'
+  | 'danza'
+  | 'artes_plasticas'
+  | 'teatro'
+  | 'literatura'
+  | 'idiomas'
+  | 'cultura_pop'
+  | 'autos'
+  | 'juventud'
+  | 'campanas'
+  | 'otro';
 export type TipoActividad = 'taller' | 'evento';
 export type Genero = 'femenino' | 'masculino' | 'no_binario' | 'prefiero_no_decir';
 export type RangoEdad = '0-11' | '12-17' | '18-29' | '30-59' | '60+';
@@ -103,7 +114,11 @@ export const CATEGORIAS: Record<Categoria, string> = {
   artes_plasticas: 'Artes plásticas',
   teatro: 'Teatro',
   literatura: 'Literatura',
+  idiomas: 'Idiomas',
+  cultura_pop: 'Anime y cultura pop',
+  autos: 'Autos y motor',
   juventud: 'Juventud',
+  campanas: 'Campañas y jornadas',
   otro: 'Otro',
 };
 

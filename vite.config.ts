@@ -14,7 +14,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'prompt', // el usuario decide cuándo actualizar (no recarga a mitad de un formulario)
-      includeAssets: ['icons/icon.svg'],
+      includeAssets: ['icons/favicon-32.png', 'icons/favicon-64.png', 'icons/apple-touch-icon.png'],
       manifest: {
         name: 'SICUJ Coacalco · Cultura y Juventud',
         short_name: 'SICUJ',
@@ -25,15 +25,16 @@ export default defineConfig({
         display: 'standalone',
         orientation: 'any', // la escala con clamp()/vmin se ve igual en vertical y horizontal
         background_color: '#ffffff',
-        theme_color: '#0f4c5c',
+        theme_color: '#263167',
         icons: [
-          { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
-          { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
-          // Pendiente: ícono "maskable" (sin esquinas redondeadas) cuando exista la identidad gráfica oficial.
+          { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          // Maskable: el logo ocupa el 80 % central (zona segura de Android).
+          { src: '/icons/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,webp,woff2}'],
         // Los chunks de admin/OCR/reportes son pesados: no se precargan,
         // se cachean bajo demanda la primera vez que se usan.
         globIgnores: [
@@ -54,6 +55,8 @@ export default defineConfig({
           '**/index.es-*.js',
           '**/tesseract-*.js',
           '**/zxing-*.js',
+          '**/mapa-*.js',
+          '**/MapaCultural-*.js',
         ],
         navigateFallback: '/index.html',
         runtimeCaching: [
@@ -73,6 +76,16 @@ export default defineConfig({
               cacheableResponse: { statuses: [0, 200] },
             },
           },
+          {
+            // Mosaicos del mapa (OpenStreetMap): los ya vistos funcionan sin conexión
+            urlPattern: /^https:\/\/tile\.openstreetmap\.org\/.*/i,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'sicuj-mapa',
+              expiration: { maxEntries: 400, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
           // Nota: Firestore NO se cachea aquí; usa su propia caché persistente en IndexedDB
           // (ver src/config/firebase.ts), que además ahorra lecturas.
         ],
@@ -88,6 +101,7 @@ export default defineConfig({
           if (id.includes('node_modules/firebase') || id.includes('node_modules/@firebase')) return 'firebase';
           if (id.includes('node_modules/tesseract')) return 'tesseract';
           if (id.includes('node_modules/@zxing')) return 'zxing';
+          if (id.includes('node_modules/leaflet')) return 'mapa';
           if (id.includes('node_modules/jspdf') || id.includes('node_modules/xlsx')) return 'reportes';
           return undefined;
         },

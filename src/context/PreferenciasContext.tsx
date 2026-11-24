@@ -3,7 +3,8 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 export type TamanoTexto = 'normal' | 'grande' | 'muy_grande';
 
 export interface Preferencias {
-  altoContraste: boolean;
+  /** Noche de luces de candil. Por defecto sigue la preferencia del sistema. */
+  modoOscuro: boolean;
   tamanoTexto: TamanoTexto;
   reducirMovimiento: boolean;
   velocidadVoz: number;
@@ -11,13 +12,16 @@ export interface Preferencias {
 
 const ESCALAS: Record<TamanoTexto, number> = { normal: 1, grande: 1.15, muy_grande: 1.3 };
 const CLAVE = 'sicuj:preferencias';
-const POR_DEFECTO: Preferencias = { altoContraste: false, tamanoTexto: 'normal', reducirMovimiento: false, velocidadVoz: 1 };
+const sistemaOscuro = () => typeof window !== 'undefined' && window.matchMedia?.('(prefers-color-scheme: dark)').matches;
+const POR_DEFECTO: Preferencias = { modoOscuro: false, tamanoTexto: 'normal', reducirMovimiento: false, velocidadVoz: 1 };
 
 function cargar(): Preferencias {
   try {
-    return { ...POR_DEFECTO, ...(JSON.parse(localStorage.getItem(CLAVE) ?? '{}') as Partial<Preferencias>) };
+    const guardadas = JSON.parse(localStorage.getItem(CLAVE) ?? '{}') as Partial<Preferencias> & { altoContraste?: boolean };
+    delete guardadas.altoContraste; // preferencia anterior, reemplazada por el modo oscuro
+    return { ...POR_DEFECTO, modoOscuro: sistemaOscuro(), ...guardadas };
   } catch {
-    return POR_DEFECTO;
+    return { ...POR_DEFECTO, modoOscuro: sistemaOscuro() };
   }
 }
 
@@ -33,8 +37,9 @@ export function PreferenciasProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const html = document.documentElement;
-    if (preferencias.altoContraste) html.dataset.contraste = 'alto';
-    else delete html.dataset.contraste;
+    if (preferencias.modoOscuro) html.dataset.tema = 'oscuro';
+    else delete html.dataset.tema;
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', preferencias.modoOscuro ? '#0b1026' : '#263167');
     if (preferencias.reducirMovimiento) html.dataset.movimiento = 'reducido';
     else delete html.dataset.movimiento;
     html.style.setProperty('--escala-texto', String(ESCALAS[preferencias.tamanoTexto]));

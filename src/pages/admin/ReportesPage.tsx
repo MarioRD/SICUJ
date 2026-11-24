@@ -166,7 +166,7 @@ export default function ReportesPage() {
                   : 'Sin periodo: contadores acumulados de cada actividad (incluye cifras precargadas de la demo).'}
               </p>
               <table className="w-full text-left text-sm">
-                <thead className="border-y border-linea bg-fondo text-xs text-tenue uppercase">
+                <thead className="border-y border-linea bg-hundido text-sm text-tenue">
                   <tr>
                     <th scope="col" className="px-5 py-2">Actividad</th>
                     <th scope="col" className="px-3 py-2 text-right">Cupo</th>
@@ -200,7 +200,7 @@ export default function ReportesPage() {
               </h2>
               <p className="px-5 pb-3 text-xs text-tenue">Personas registradas (titulares y acompañantes) en el periodo.</p>
               <table className="w-full text-center text-sm">
-                <thead className="border-y border-linea bg-fondo text-xs text-tenue uppercase">
+                <thead className="border-y border-linea bg-hundido text-sm text-tenue">
                   <tr>
                     <th scope="col" className="px-5 py-2 text-left">Edad</th>
                     {generos.map((g) => (

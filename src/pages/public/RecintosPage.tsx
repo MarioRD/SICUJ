@@ -1,5 +1,7 @@
 import { Accessibility, Building2, LocateFixed, MapPin, Navigation } from 'lucide-react';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { ComoLlegar, Mapa, type Destino, type PuntoMapa } from '@/components/mapa';
+import { TextoRotativo } from '@/components/ui/Animados';
 import { Alerta, Cargando, Insignia, Vacio } from '@/components/ui/Basicos';
 import { Boton } from '@/components/ui/Boton';
 import { useGeolocation } from '@/hooks/useGeolocation';
@@ -27,12 +29,45 @@ export default function RecintosPage() {
     return m;
   }, [talleres]);
 
+  const [destino, setDestino] = useState<Destino | null>(null);
+  const puntos = useMemo<PuntoMapa[]>(
+    () =>
+      lista.map((r) => ({
+        id: r.id,
+        nombre: r.nombre,
+        direccion: r.direccion,
+        lat: r.ubicacion.lat,
+        lng: r.ubicacion.lng,
+        distanciaKm: r.distanciaKm,
+        actividades: (talleres ?? []).filter((t) => t.recintoId === r.id).map((t) => ({ id: t.id, titulo: t.titulo })),
+      })),
+    [lista, talleres],
+  );
+
   return (
     <div className="flex flex-col gap-5">
       <header className="flex flex-col gap-1">
-        <h1 className="text-3xl font-bold">Recintos culturales</h1>
+        <h1 className="text-3xl leading-tight font-bold">
+          Recintos{' '}
+          <TextoRotativo
+            textos={['culturales', 'juveniles', 'cerca de ti']}
+            intervalo={2600}
+          />
+        </h1>
         <p className="text-tenue">Encuentra el espacio cultural más cercano a ti.</p>
       </header>
+
+      {recintos && lista.length > 0 && (
+        <Mapa
+          puntos={puntos}
+          ubicacion={ubicacion.estado === 'listo' ? ubicacion.coords : null}
+          alComoLlegar={setDestino}
+          alPedirUbicacion={solicitar}
+          buscando={ubicacion.estado === 'buscando'}
+          marco={false}
+          titulo="Mapa de recintos"
+        />
+      )}
 
       {ubicacion.estado !== 'listo' && (
         <Boton
@@ -59,10 +94,15 @@ export default function RecintosPage() {
         <ol className="rejilla-auto">
           {lista.map((r, i) => {
             const n = actividadesPorRecinto.get(r.id) ?? 0;
-            const rutaUrl = `https://www.openstreetmap.org/directions?to=${r.ubicacion.lat}%2C${r.ubicacion.lng}`;
             return (
-              <li key={r.id} className="tarjeta flex flex-col overflow-hidden">
-                {r.imagenUrl && <img src={r.imagenUrl} alt="" loading="lazy" className="aspect-[16/7] w-full object-cover" />}
+              <li key={r.id} className="tarjeta group flex flex-col overflow-hidden transition-[box-shadow,transform] duration-(--dur-corta) ease-(--curva) hover:-translate-y-0.5 hover:shadow-lg">
+                {r.imagenUrl ? (
+                  <div className="overflow-hidden">
+                    <img src={r.imagenUrl} alt="" loading="lazy" className="zoom-imagen aspect-[16/7] w-full object-cover" />
+                  </div>
+                ) : (
+                  <div className="banda-rebozo" aria-hidden />
+                )}
                 <div className="flex flex-1 flex-col gap-2 p-4">
                   <div className="flex items-start justify-between gap-2">
                     <h2 className="text-lg leading-tight font-bold">
@@ -89,20 +129,23 @@ export default function RecintosPage() {
                     )}
                     <Insignia>{n === 1 ? '1 actividad' : `${n} actividades`}</Insignia>
                   </div>
-                  <a
-                    href={rutaUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-auto pt-2 text-sm font-semibold text-marca underline"
-                  >
-                    Cómo llegar<span className="solo-lectores"> a {r.nombre} (se abre en otra pestaña)</span>
-                  </a>
+                  <div className="mt-auto pt-2">
+                    <Boton
+                      tamano="sm"
+                      variante="secundario"
+                      onClick={() => setDestino({ nombre: r.nombre, lat: r.ubicacion.lat, lng: r.ubicacion.lng })}
+                      icono={<Navigation aria-hidden className="size-4" />}
+                    >
+                      Cómo llegar<span className="solo-lectores"> a {r.nombre}</span>
+                    </Boton>
+                  </div>
                 </div>
               </li>
             );
           })}
         </ol>
       )}
+      <ComoLlegar destino={destino} alCerrar={() => setDestino(null)} />
     </div>
   );
 }

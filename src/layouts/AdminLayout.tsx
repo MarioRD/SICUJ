@@ -2,6 +2,7 @@ import { BarChart3, Building2, ExternalLink, FileSpreadsheet, LayoutDashboard, L
 import { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { SaltarAlContenido } from '@/components/ui/Basicos';
+import { Vidrio } from '@/components/ui/Vidrio';
 import { useAuth } from '@/context/AuthContext';
 import { cerrarSesion } from '@/services/auth.service';
 import type { Rol } from '@/types/models';
@@ -34,21 +35,31 @@ export function AdminLayout() {
   };
 
   return (
-    <div className="escala-admin flex min-h-dvh bg-fondo text-base">
+    <div className="escala-admin flex min-h-dvh text-base">
       <SaltarAlContenido />
 
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-[clamp(15rem,17vw,19rem)] flex-col bg-marca text-marca-tinta transition-transform lg:sticky lg:top-0 lg:h-dvh lg:translate-x-0 ${
+        className={`superficie-oscura fixed inset-y-0 left-0 z-40 flex w-[clamp(15rem,17vw,19rem)] flex-col overflow-y-auto bg-anil text-blanco transition-transform duration-(--dur-corta) ease-(--curva) lg:sticky lg:top-0 lg:h-dvh lg:translate-x-0 ${
           menuAbierto ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
         }`}
         aria-label="Menú del panel"
       >
-        <div className="flex items-center justify-between gap-2 px-5 py-5">
-          <Link to="/admin" className="flex items-center gap-3">
-            <img src="/icons/icon.svg" alt="" className="size-10 rounded-lg ring-2 ring-white/20" />
+        <div className="banda-rebozo shrink-0" aria-hidden />
+        <div className="flex items-start justify-between gap-2 px-4 pt-5 pb-4">
+          <Link to="/admin" className="flex flex-col gap-3 rounded-lg">
+            <span className="rounded-lg bg-blanco px-3 py-2 shadow-sm">
+              <img
+                src="/brand/imjuvec-96.webp"
+                srcSet="/brand/imjuvec-96.webp 1x, /brand/imjuvec-192.webp 2x"
+                alt="Instituto Municipal de la Juventud de Coacalco"
+                width={162}
+                height={96}
+                className="h-12 w-auto"
+              />
+            </span>
             <span className="leading-tight">
-              <span className="block text-lg font-bold">SICUJ</span>
-              <span className="block text-xs opacity-80">Panel administrativo</span>
+              <span className="fuente-display block text-lg font-bold">SICUJ</span>
+              <span className="block text-xs text-blanco/80">Panel administrativo</span>
             </span>
           </Link>
           <button type="button" onClick={() => setMenuAbierto(false)} className="toque rounded-md lg:hidden" aria-label="Cerrar menú">
@@ -64,8 +75,8 @@ export function AdminLayout() {
                   to={a}
                   end={fin}
                   className={({ isActive }) =>
-                    `flex min-h-(--toque-min) items-center gap-3 rounded-md px-3 font-semibold transition ${
-                      isActive ? 'bg-white text-marca' : 'hover:bg-white/10'
+                    `flex min-h-(--toque-min) items-center gap-3 rounded-md border-l-4 px-3 font-semibold transition-[background-color,border-color] duration-(--dur-micro) ${
+                      isActive ? 'border-amarillo bg-blanco/14 font-bold' : 'border-transparent hover:bg-blanco/8'
                     }`
                   }
                 >
@@ -77,37 +88,38 @@ export function AdminLayout() {
           </ul>
         </nav>
 
-        <div className="border-t border-white/15 p-4 text-sm">
+        <div className="banda-greca mx-4 mb-2 shrink-0 opacity-30" aria-hidden />
+        <div className="border-t border-blanco/15 p-4 text-sm">
           <p className="font-semibold">{usuario?.nombre}</p>
-          <p className="mb-3 text-xs opacity-80">
-            {usuario?.email} · {usuario?.rol === 'admin' ? 'Administración' : 'Personal de acceso'}
-          </p>
+          <p className="text-xs text-blanco/80">{usuario?.email}</p>
+          <p className="mb-3 text-xs text-blanco/80">{usuario?.rol === 'admin' ? 'Administración' : 'Personal de acceso'}</p>
           <div className="flex flex-col gap-1">
-            <Link to="/" className="flex min-h-(--toque-min) items-center gap-2 rounded-md px-2 hover:bg-white/10">
+            <Link to="/" className="flex min-h-(--toque-min) items-center gap-2 rounded-md px-2 hover:bg-blanco/8">
               <ExternalLink aria-hidden className="size-4" /> Ver sitio ciudadano
             </Link>
-            <button type="button" onClick={salir} className="flex min-h-(--toque-min) items-center gap-2 rounded-md px-2 text-left hover:bg-white/10">
+            <button type="button" onClick={salir} className="flex min-h-(--toque-min) items-center gap-2 rounded-md px-2 text-left hover:bg-blanco/8">
               <LogOut aria-hidden className="size-4" /> Cerrar sesión
             </button>
           </div>
         </div>
       </aside>
 
-      {menuAbierto && <div className="fixed inset-0 z-30 bg-black/50 lg:hidden" onClick={() => setMenuAbierto(false)} aria-hidden />}
+      {menuAbierto && <div className="fixed inset-0 z-30 bg-anil/45 backdrop-blur-sm lg:hidden" onClick={() => setMenuAbierto(false)} aria-hidden />}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-linea bg-superficie px-4 py-2 lg:hidden">
+        <Vidrio as="header" fuerza={14} bisel={10} className="sticky top-0 z-20 flex items-center gap-3 px-4 py-2 lg:hidden">
           <button
             type="button"
             onClick={() => setMenuAbierto(true)}
-            className="toque grid place-items-center rounded-md hover:bg-tinta/6"
+            className="toque grid place-items-center rounded-md hover:bg-marca/8"
             aria-label="Abrir menú"
             aria-expanded={menuAbierto}
           >
             <Menu aria-hidden className="size-6" />
           </button>
-          <span className="font-bold">SICUJ · Panel</span>
-        </header>
+          <img src="/brand/imjuvec-96.webp" alt="" width={162} height={96} className="h-8 w-auto" />
+          <span className="fuente-display font-bold text-titulo">Panel SICUJ</span>
+        </Vidrio>
         <main id="contenido" tabIndex={-1} className="contenedor flex-1 py-8 focus:outline-none">
           <Outlet />
         </main>
@@ -120,7 +132,7 @@ export function EncabezadoPagina({ titulo, descripcion, acciones }: { titulo: st
   return (
     <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
       <div>
-        <h1 className="text-3xl font-bold">{titulo}</h1>
+        <h1 className="text-3xl leading-tight font-bold">{titulo}</h1>
         {descripcion && <p className="mt-1 text-tenue">{descripcion}</p>}
       </div>
       {acciones && <div className="flex flex-wrap gap-2">{acciones}</div>}

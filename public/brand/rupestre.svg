@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 480" width="480" height="480" fill="black" stroke="black" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Motivos de pintura rupestre (originales) para el fondo: se usan como máscara. -->
+  <!-- mano -->
+  <g transform="translate(70 70) rotate(-12)" stroke="none">
+    <ellipse cx="0" cy="18" rx="17" ry="20"/>
+    <rect x="-17" y="-22" width="7" height="26" rx="3.5"/>
+    <rect x="-8" y="-30" width="7" height="32" rx="3.5"/>
+    <rect x="1" y="-28" width="7" height="30" rx="3.5"/>
+    <rect x="10" y="-20" width="6.5" height="24" rx="3.2"/>
+    <rect x="13" y="8" width="6" height="20" rx="3" transform="rotate(-48 16 18)"/>
+  </g>
+  <!-- espiral -->
+  <path d="M300 60c0-6 9-7 12-1 4 9-6 18-16 15-14-4-16-23-4-32 15-11 37-3 40 16 3 22-17 38-38 34" fill="none" stroke-width="4"/>
+  <!-- venado -->
+  <g fill="none" stroke-width="4">
+    <path d="M150 220h60c6 0 10-6 12-12"/>
+    <path d="M222 208l6-14M226 196l10-6M228 194l-4-10M222 198l-10-8"/>
+    <path d="M158 220l-8 26M170 220l4 26M196 220l-6 26M206 220l8 26"/>
+    <path d="M150 220l-8-8"/>
+  </g>
+  <!-- figuras humanas tomadas de la mano -->
+  <g fill="none" stroke-width="4">
+    <circle cx="330" cy="200" r="7" fill="black"/>
+    <path d="M330 207v26M330 233l-9 20M330 233l9 20M330 214l-16 10M330 214l16 10"/>
+    <circle cx="366" cy="200" r="7" fill="black"/>
+    <path d="M366 207v26M366 233l-9 20M366 233l9 20M366 214l-20 10M366 214l16-12"/>
+    <circle cx="402" cy="204" r="6" fill="black"/>
+    <path d="M402 210v22M402 232l-8 18M402 232l8 18M402 216l-20 8M402 216l14 10"/>
+  </g>
+  <!-- sol -->
+  <g fill="none" stroke-width="4">
+    <circle cx="90" cy="340" r="16"/>
+    <circle cx="90" cy="340" r="5" fill="black"/>
+    <path d="M90 314v-12M90 366v12M64 340h-12M116 340h12M72 322l-8-8M108 358l8 8M108 322l8-8M72 358l-8 8"/>
+  </g>
+  <!-- hileras de puntos (cuentas) -->
+  <g stroke="none">
+    <circle cx="200" cy="330" r="4"/><circle cx="216" cy="330" r="4"/><circle cx="232" cy="330" r="4"/><circle cx="248" cy="330" r="4"/>
+    <circle cx="208" cy="346" r="4"/><circle cx="224" cy="346" r="4"/><circle cx="240" cy="346" r="4"/>
+  </g>
+  <!-- greca de escalones -->
+  <path d="M290 400h14v-14h14v-14h14v28h-14v-14" fill="none" stroke-width="4"/>
+  <!-- mano pequeña en negativo (contorno) -->
+  <g transform="translate(410 420) rotate(18)" fill="none" stroke-width="3">
+    <ellipse cx="0" cy="12" rx="12" ry="14"/>
+    <path d="M-10-4v-14M-4-8v-18M2-8v-17M8-4v-13M11 8l10-8"/>
+  </g>
+  <!-- serpiente ondulante -->
+  <path d="M150 440c12-14 24 14 36 0s24 14 36 0 24 14 36 0" fill="none" stroke-width="5"/>
+  <circle cx="262" cy="436" r="5" stroke="none"/>
+</svg>

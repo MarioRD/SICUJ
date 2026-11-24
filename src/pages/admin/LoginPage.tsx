@@ -37,12 +37,20 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="escala-admin grid min-h-dvh place-items-center bg-marca p-6 text-base">
-      <main className="tarjeta flex w-full max-w-[clamp(22rem,32vw,30rem)] flex-col gap-6 p-8 shadow-2xl">
-        <div className="flex items-center gap-3">
-          <img src="/icons/icon.svg" alt="" className="size-12 rounded-lg" />
-          <div>
-            <h1 className="text-2xl font-bold">Panel SICUJ</h1>
+    <div className="escala-admin portada-agua grid min-h-dvh place-items-center p-6 text-base">
+      <main className="tarjeta flex w-full max-w-[clamp(22rem,32vw,30rem)] flex-col gap-6 overflow-hidden p-8 pt-0 text-tinta shadow-2xl">
+        <div className="banda-rebozo -mx-8" aria-hidden />
+        <div className="flex items-center gap-4">
+          <img
+            src="/brand/imjuvec-96.webp"
+            srcSet="/brand/imjuvec-96.webp 1x, /brand/imjuvec-192.webp 2x"
+            alt="Instituto Municipal de la Juventud de Coacalco"
+            width={162}
+            height={96}
+            className="h-14 w-auto"
+          />
+          <div className="border-l border-linea pl-4">
+            <h1 className="text-2xl leading-tight font-bold">Panel SICUJ</h1>
             <p className="text-sm text-tenue">Dirección de Cultura y Juventud</p>
           </div>
         </div>

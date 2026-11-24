@@ -149,7 +149,7 @@ export default function InscripcionPage() {
         <ArrowLeft aria-hidden className="size-5" /> Volver
       </Link>
       <header>
-        <p className="text-sm font-semibold text-tenue uppercase">Inscripción</p>
+        <p className="text-sm font-semibold text-tenue">Inscripción</p>
         <h1 className="text-2xl leading-tight font-bold">{taller.titulo}</h1>
         <p className="mt-1 text-sm text-tenue">
           {describirRangoTaller(taller.edadMin, taller.edadMax)} · {libres} lugares disponibles

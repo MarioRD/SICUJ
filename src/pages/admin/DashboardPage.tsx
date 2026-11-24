@@ -86,7 +86,7 @@ export default function DashboardPage() {
           </h2>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="border-y border-linea bg-fondo text-xs text-tenue uppercase">
+              <thead className="border-y border-linea bg-hundido text-sm text-tenue">
                 <tr>
                   <th scope="col" className="px-5 py-2.5">Actividad</th>
                   <th scope="col" className="px-3 py-2.5">Inicio</th>

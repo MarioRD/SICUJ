@@ -1,4 +1,10 @@
+/* Hallmark · v2.0.0 · redesign: restyle (chrome, portada, mapa y boleto recompuestos) · scope: app · shape: app screen · theme: brand (Coacalco 2025-2027 / IMJUVEC) · signature: el boleto desprendible y la portada de agua con greca · type: Encode Sans (display, ancho) + Atkinson Hyperlegible Next (texto) */
+/* critique: la marca es muy colorida; el añil carga la interfaz, el amarillo marca la acción principal, el rojo vive en la marca y el rebozo. Fondo blanco con líneas grises y la serpiente de Coacalco como marca de agua; de noche, luces de candil. El vidrio líquido refracta solo en Chromium; en los demás navegadores cae a vidrio esmerilado. */
+
 @import "tailwindcss";
+@import "@fontsource-variable/encode-sans/standard.css";
+@import "@fontsource-variable/atkinson-hyperlegible-next/wght.css";
+@import "leaflet/dist/leaflet.css" layer(base);
 
 /* ==========================================================================
    SICUJ · Sistema de medidas fluidas
@@ -28,32 +34,144 @@
   --fs-xl: calc(clamp(1.25rem, 1rem + 1vmin, 1.65rem) * var(--escala-texto));
   --fs-2xl: calc(clamp(1.5rem, 1.15rem + 1.5vmin, 2.1rem) * var(--escala-texto));
   --fs-3xl: calc(clamp(1.85rem, 1.3rem + 2.4vmin, 2.75rem) * var(--escala-texto));
+  --fs-portada: calc(clamp(2.1rem, 1.2rem + 4.2vmin, 3.6rem) * var(--escala-texto));
 
   /* Unidad de espacio: p-4 = 4 × unidad (≈16 px en teléfono) */
   --sp-unidad: clamp(0.25rem, 0.2rem + 0.2vmin, 0.34rem);
-  --radio: clamp(0.5rem, 0.35rem + 0.6vmin, 0.9rem);
-  --ancho-contenido: clamp(20rem, 92vw, 60rem);
+  --radio: clamp(0.75rem, 0.55rem + 0.7vmin, 1.1rem);
+  --ancho-contenido: clamp(20rem, 92vw, 72rem);
   --toque-min: clamp(2.75rem, 2.5rem + 1vmin, 3.25rem); /* objetivo táctil WCAG ≥ 44 px */
 
-  /* Colores (provisionales: la paleta institucional llegará con el rediseño) */
-  --c-fondo: #f6f7f8;
-  --c-superficie: #ffffff;
-  --c-tinta: #14212b;
-  --c-tenue: #4b5a66;
-  --c-linea: #d5dbe0;
-  --c-marca: #0f4c5c;
-  --c-marca-tinta: #ffffff;
-  --c-acento: #f2b705;
-  --c-acento-tinta: #14212b;
+  /* ---- Paleta institucional (Coacalco 2025-2027 / IMJUVEC) ---- */
+  --c-rojo: #e00d16;
+  --c-amarillo: #fecb17;
+  --c-anil: #263167;
+  --c-blanco: #ffffff;
+  --c-azul: #185ca7;
+  --c-cielo: #3c9cd9;
+  --c-coral: #e7323b;
+  --c-grafito: #3f4140;
+  --c-carbon: #2a2a2a;
+  --c-noche: #0b1026;
+  --c-bisel: #121419; /* marco de los dispositivos del mapa */
+  /* Pigmentos de mural (pintura rupestre / Tepantitla) */
+  --c-mural: #8c2f22;
+  --c-mural-oscuro: #5e1d16;
+  --c-ocre: #c9772e;
+  --c-hueso: #f1e3c4;
+  --c-jade: #4f8a6f;
+
+  /* ---- Roles (los componentes solo usan estos) ---- */
+  --c-fondo: var(--c-blanco);
+  --c-superficie: var(--c-blanco);
+  --c-hundido: #f2f2f4; /* bloques de datos dentro de una tarjeta */
+  --c-tinta: var(--c-carbon);
+  --c-tenue: #5a5c5e;
+  --c-linea: #e3e3e8;
+  --c-patron: #e4e4ea; /* líneas de agua del fondo */
+  --c-serpiente: #cfcfd6; /* marca de agua de Coacalco */
+  --c-rupestre: #c9772e; /* toques de pintura rupestre en el fondo */
+  --c-marca: var(--c-anil);
+  --c-marca-hover: #34418a;
+  --c-marca-tinta: var(--c-blanco);
+  --c-acento: var(--c-amarillo);
+  --c-acento-hover: #ffd94d;
+  --c-acento-tinta: var(--c-anil);
+  --c-titulo: var(--c-anil);
+  --c-resaltado: color-mix(in oklab, var(--c-amarillo) 60%, transparent);
   --c-ok: #136f3a;
   --c-ok-fondo: #e3f4ea;
-  --c-error: #b42318;
-  --c-error-fondo: #fdecea;
-  --c-aviso: #8a5a00;
-  --c-aviso-fondo: #fff4d6;
-  --c-foco: #f2b705;
+  --c-error: #b0121a;
+  --c-error-fondo: #fdeceb;
+  --c-aviso: #7a5200;
+  --c-aviso-fondo: #fff3cf;
+  --c-foco: var(--c-azul);
+
+  /* Sombras teñidas de añil (nunca gris neutro) */
+  --sombra-color: rgb(38 49 103 / 0.16);
+  --sombra-suave: 0 1px 2px rgb(38 49 103 / 0.06), 0 4px 14px -6px var(--sombra-color);
+  --sombra-alta: 0 2px 4px rgb(38 49 103 / 0.08), 0 18px 40px -16px rgb(38 49 103 / 0.32);
+
+  /* Vidrio líquido */
+  --vidrio-tinte: var(--c-blanco);
+  --vidrio-opacidad: 42%;
+  --vidrio-luz: var(--c-blanco);
+  --vidrio-borde-luz: 0.9;
+  --vidrio-borde-sombra: 0.32;
+  --vidrio-desenfoque: 14px;
+
+  /* Movimiento: solo estado, nunca decoración */
+  --dur-micro: 120ms;
+  --dur-corta: 220ms;
+  --dur-larga: 420ms;
+  --curva: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --curva-liquida: cubic-bezier(0.34, 1.45, 0.5, 1); /* con un ligero rebote */
+
+  /* Patrones (máscaras SVG: el color siempre sale de un token) */
+  --patron-greca: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='18' viewBox='0 0 32 18'%3E%3Cpath d='M0 15H4V11H8V7H12V3H28V15H32M20 3V11H15V7' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='square'/%3E%3C/svg%3E");
+  --patron-agua: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='28' viewBox='0 0 80 28'%3E%3Cg fill='none' stroke='black' stroke-width='1.4'%3E%3Cpath d='M0 8c10 0 10-6 20-6s10 6 20 6 10-6 20-6 10 6 20 6'/%3E%3Cpath d='M0 22c10 0 10-6 20-6s10 6 20 6 10-6 20-6 10 6 20 6'/%3E%3C/g%3E%3Ccircle cx='40' cy='12' r='1.5'/%3E%3Ccircle cx='0' cy='26' r='1.5'/%3E%3Ccircle cx='80' cy='26' r='1.5'/%3E%3C/svg%3E");
+  --patron-rombos: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Cpath d='M14 3l11 11-11 11L3 14z' fill='none' stroke='black' stroke-width='1.4'/%3E%3Cpath d='M14 10.5l3.5 3.5-3.5 3.5-3.5-3.5z'/%3E%3C/svg%3E");
+  --rebozo: repeating-linear-gradient(
+    90deg,
+    var(--c-anil) 0 14px,
+    var(--c-blanco) 14px 15px,
+    var(--c-rojo) 15px 25px,
+    var(--c-amarillo) 25px 29px,
+    var(--c-rojo) 29px 33px,
+    var(--c-blanco) 33px 34px,
+    var(--c-azul) 34px 44px,
+    var(--c-cielo) 44px 48px,
+    var(--c-blanco) 48px 49px,
+    var(--c-coral) 49px 55px,
+    var(--c-amarillo) 55px 58px
+  );
+
+  /* Alto de la barra inferior flotante (móvil); 0 en escritorio */
+  --alto-barra: calc(var(--toque-min) * 1.3 + 1.25rem + env(safe-area-inset-bottom, 0px));
 
   color-scheme: light;
+}
+
+@media (min-width: 64rem) {
+  :root {
+    --alto-barra: 0px;
+  }
+}
+
+/* ---------------- Modo oscuro: noche de luces de candil ---------------- */
+:root[data-tema="oscuro"] {
+  --c-fondo: var(--c-noche);
+  --c-superficie: #141a3a;
+  --c-hundido: #1c2349;
+  --c-tinta: #f3f1ec;
+  --c-tenue: #b9bdd0;
+  --c-linea: #2b3366;
+  --c-patron: #1a2147;
+  --c-serpiente: #3c9cd9;
+  --c-rupestre: #e0a060;
+  --c-marca: #6cbcf0;
+  --c-marca-hover: #94cff5;
+  --c-marca-tinta: var(--c-noche);
+  --c-acento: var(--c-amarillo);
+  --c-acento-hover: #ffd94d;
+  --c-acento-tinta: var(--c-anil);
+  --c-titulo: #ffffff;
+  --c-resaltado: color-mix(in oklab, var(--c-amarillo) 38%, transparent);
+  --c-ok: #74e0a2;
+  --c-ok-fondo: #10291f;
+  --c-error: #ff9a94;
+  --c-error-fondo: #3a1520;
+  --c-aviso: #ffd66b;
+  --c-aviso-fondo: #33290c;
+  --c-foco: var(--c-amarillo);
+  --sombra-color: rgb(0 0 0 / 0.45);
+  --sombra-suave: 0 1px 2px rgb(0 0 0 / 0.3), 0 6px 18px -8px var(--sombra-color);
+  --sombra-alta: 0 2px 6px rgb(0 0 0 / 0.35), 0 22px 48px -18px rgb(0 0 0 / 0.7);
+  --vidrio-tinte: #1a2150;
+  --vidrio-opacidad: 48%;
+  --vidrio-borde-luz: 0.38;
+  --vidrio-borde-sombra: 0.1;
+  color-scheme: dark;
 }
 
 /* Escala del panel administrativo: densa, pensada para laptop y monitor */
@@ -66,34 +184,20 @@
   --fs-2xl: calc(clamp(1.4rem, 0.85rem + 0.9vmin, 1.9rem) * var(--escala-texto));
   --fs-3xl: calc(clamp(1.75rem, 1rem + 1.2vmin, 2.4rem) * var(--escala-texto));
   --sp-unidad: clamp(0.22rem, 0.12rem + 0.18vmin, 0.3rem);
-  --radio: clamp(0.4rem, 0.25rem + 0.3vmin, 0.65rem);
+  --radio: clamp(0.55rem, 0.35rem + 0.35vmin, 0.8rem);
   --ancho-contenido: clamp(40rem, 94vw, 110rem);
   --toque-min: clamp(2.25rem, 1.8rem + 0.6vmin, 2.75rem);
+  --alto-barra: 0px;
 }
 
-/* Alto contraste (WCAG AAA en texto normal) */
-:root[data-contraste="alto"] {
-  --c-fondo: #000000;
-  --c-superficie: #000000;
-  --c-tinta: #ffffff;
-  --c-tenue: #f0f0f0;
-  --c-linea: #ffffff;
-  --c-marca: #ffe600;
-  --c-marca-tinta: #000000;
-  --c-acento: #00e5ff;
-  --c-acento-tinta: #000000;
-  --c-ok: #7dff9a;
-  --c-ok-fondo: #000000;
-  --c-error: #ff8a80;
-  --c-error-fondo: #000000;
-  --c-aviso: #ffe600;
-  --c-aviso-fondo: #000000;
-  --c-foco: #00e5ff;
-  color-scheme: dark;
+/* Superficies oscuras (añil): el foco pasa a amarillo para conservar contraste */
+.superficie-oscura {
+  --c-foco: var(--c-amarillo);
 }
 
 @theme inline {
-  --font-sans: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-sans: "Atkinson Hyperlegible Next Variable", "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Encode Sans Variable", "Atkinson Hyperlegible Next Variable", system-ui, sans-serif;
 
   --text-xs: var(--fs-xs);
   --text-sm: var(--fs-sm);
@@ -109,64 +213,210 @@
   --radius-md: calc(var(--radio) * 0.75);
   --radius-lg: var(--radio);
   --radius-xl: calc(var(--radio) * 1.4);
+  --radius-2xl: calc(var(--radio) * 1.8);
+
+  --shadow-sm: var(--sombra-suave);
+  --shadow-md: var(--sombra-suave);
+  --shadow-lg: var(--sombra-alta);
+  --shadow-xl: var(--sombra-alta);
+  --shadow-2xl: var(--sombra-alta);
 
   --color-fondo: var(--c-fondo);
   --color-superficie: var(--c-superficie);
+  --color-hundido: var(--c-hundido);
   --color-tinta: var(--c-tinta);
   --color-tenue: var(--c-tenue);
   --color-linea: var(--c-linea);
   --color-marca: var(--c-marca);
+  --color-marca-hover: var(--c-marca-hover);
   --color-marca-tinta: var(--c-marca-tinta);
   --color-acento: var(--c-acento);
+  --color-acento-hover: var(--c-acento-hover);
   --color-acento-tinta: var(--c-acento-tinta);
+  --color-titulo: var(--c-titulo);
   --color-ok: var(--c-ok);
   --color-ok-fondo: var(--c-ok-fondo);
   --color-error: var(--c-error);
   --color-error-fondo: var(--c-error-fondo);
   --color-aviso: var(--c-aviso);
   --color-aviso-fondo: var(--c-aviso-fondo);
+
+  --color-rojo: var(--c-rojo);
+  --color-amarillo: var(--c-amarillo);
+  --color-anil: var(--c-anil);
+  --color-azul: var(--c-azul);
+  --color-cielo: var(--c-cielo);
+  --color-coral: var(--c-coral);
+  --color-blanco: var(--c-blanco);
+  --color-mural: var(--c-mural);
+  --color-hueso: var(--c-hueso);
+}
+
+@property --destello-a {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: #3c9cd9;
+}
+@property --destello-b {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: #fecb17;
+}
+@property --fade-inicio {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+@property --fade-fin {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
 }
 
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
+    overflow-x: clip;
+    background-color: var(--c-fondo);
+    /* Las barras fijas nunca tapan el elemento con foco (WCAG 2.4.11) */
+    scroll-padding-top: 5rem;
+    scroll-padding-bottom: calc(var(--alto-barra) + 1rem);
+  }
+  html.lenis,
+  html.lenis body {
+    height: auto;
+  }
+  .lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+  }
+  .lenis.lenis-stopped {
+    overflow: clip;
+  }
+  [data-lenis-prevent] {
+    overscroll-behavior: contain;
+  }
+  /* Barra de desplazamiento: píldora añil que se enciende en rojo, sin riel */
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: var(--c-marca) transparent;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    border: 3px solid transparent;
+    border-radius: 999px;
+    background: linear-gradient(var(--c-anil), var(--c-azul)) padding-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(var(--c-rojo), var(--c-coral)) padding-box;
   }
   body {
-    background: var(--c-fondo);
+    overflow-x: clip;
     color: var(--c-tinta);
     font-family: var(--font-sans);
     font-size: var(--fs-base);
     line-height: 1.55;
     min-height: 100dvh;
+    font-synthesis: none;
+    -webkit-font-smoothing: antialiased;
   }
+
+  /* Fondo: líneas de agua grises sobre blanco + la serpiente de Coacalco
+     ("en la casa de la serpiente") como marca de agua. Capas fijas detrás
+     de todo, para que el vidrio tenga qué refractar. */
+  body::before,
+  body::after {
+    content: "";
+    position: fixed;
+    z-index: -1;
+    pointer-events: none;
+  }
+  body::before {
+    inset: 0;
+    background:
+      radial-gradient(70rem 34rem at 92% -12%, color-mix(in oklab, var(--c-cielo) 14%, transparent), transparent 70%),
+      radial-gradient(48rem 30rem at -12% 18%, color-mix(in oklab, var(--c-amarillo) 10%, transparent), transparent 70%),
+      var(--c-patron);
+    mask: var(--patron-agua) repeat 0 0 / 120px 42px, linear-gradient(to bottom, black, transparent 62%);
+    mask-composite: intersect;
+  }
+  /* Pintura rupestre: motivos ocres que aparecen hacia abajo, donde las ondas ya se desvanecieron */
+  html::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-color: var(--c-rupestre);
+    opacity: 0.13;
+    mask: url("/brand/rupestre.svg") repeat 40px 0 / 420px 420px, linear-gradient(to top, black, transparent 70%);
+    mask-composite: intersect;
+  }
+  body::after {
+    inset-inline-end: max(-6vmin, -3rem);
+    inset-block-end: calc(var(--alto-barra) * 0.4);
+    inline-size: min(82vmin, 36rem);
+    aspect-ratio: 1;
+    background-color: var(--c-serpiente);
+    opacity: 0.6;
+    mask: url("/brand/coatl.svg") no-repeat center / contain;
+  }
+  :root[data-tema="oscuro"] body::before {
+    display: none;
+  }
+  :root[data-tema="oscuro"] html::after,
+  :root[data-tema="oscuro"]::after {
+    opacity: 0.07;
+  }
+  :root[data-tema="oscuro"] body::after {
+    opacity: 0.1;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-stretch: 108%;
+    color: var(--c-titulo);
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+    overflow-wrap: break-word;
+    min-width: 0;
+  }
+  p,
+  li {
+    text-wrap: pretty;
+  }
+
   :focus-visible {
     outline: 3px solid var(--c-foco);
     outline-offset: 2px;
-    border-radius: 2px;
-  }
-  /* En alto contraste los bordes siempre se ven */
-  :root[data-contraste="alto"] .tarjeta,
-  :root[data-contraste="alto"] button,
-  :root[data-contraste="alto"] input,
-  :root[data-contraste="alto"] select,
-  :root[data-contraste="alto"] textarea {
-    border-color: var(--c-linea) !important;
   }
   :root[data-movimiento="reducido"] *,
   :root[data-movimiento="reducido"] *::before,
   :root[data-movimiento="reducido"] *::after {
     animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
     transition-duration: 0.01ms !important;
   }
   @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
+    *,
+    *::before,
+    *::after {
       animation-duration: 0.01ms !important;
+      animation-delay: 0ms !important;
       transition-duration: 0.01ms !important;
     }
   }
   dialog::backdrop {
-    background: rgb(0 0 0 / 0.55);
+    background: color-mix(in oklab, var(--c-anil) 45%, transparent);
+    backdrop-filter: blur(6px);
   }
 }
 
@@ -180,13 +430,18 @@
   .tarjeta {
     background: var(--c-superficie);
     border: 1px solid var(--c-linea);
-    border-radius: var(--radio);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--sombra-suave);
+  }
+  .fuente-display {
+    font-family: var(--font-display);
+    font-stretch: 108%;
   }
   /* Rejilla que se adapta sola: misma anchura mínima de tarjeta en vertical u horizontal */
   .rejilla-auto {
     display: grid;
-    gap: calc(var(--sp-unidad) * 4);
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, clamp(16rem, 40vmin, 22rem)), 1fr));
+    gap: calc(var(--sp-unidad) * 5);
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, clamp(16rem, 40vmin, 21rem)), 1fr));
   }
   /* Celular en horizontal: el encabezado deja de ser fijo para no robar alto útil */
   @media (orientation: landscape) and (max-height: 32rem) {
@@ -208,5 +463,965 @@
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
     border: 0;
+  }
+
+  /* ---------------- Vidrio líquido ----------------
+     Lente con bisel: el componente <Vidrio> añade una refracción real del
+     fondo (SVG feDisplacementMap) en Chromium. Aquí van el tinte, el brillo
+     especular del borde (luz arriba a la izquierda) y la sombra del bisel.
+     Sin soporte, queda como vidrio esmerilado; con menos transparencia, opaco. */
+  .vidrio,
+  .vidrio-oscuro {
+    position: relative;
+    isolation: isolate;
+    -webkit-backdrop-filter: blur(var(--vidrio-desenfoque)) saturate(180%);
+    backdrop-filter: blur(var(--vidrio-desenfoque)) saturate(180%);
+  }
+  .vidrio {
+    background: color-mix(in oklab, var(--vidrio-tinte) var(--vidrio-opacidad), transparent);
+    box-shadow:
+      inset 1.5px 1.5px 0 -0.5px rgb(255 255 255 / var(--vidrio-borde-luz)),
+      inset -1px -1px 0 -0.5px rgb(255 255 255 / calc(var(--vidrio-borde-luz) * 0.5)),
+      inset 0 0 18px -6px rgb(255 255 255 / var(--vidrio-borde-luz)),
+      inset 0 -10px 18px -14px rgb(38 49 103 / var(--vidrio-borde-sombra)),
+      var(--sombra-suave);
+  }
+  /* Brillo especular del canto: un aro degradado que solo pinta el borde */
+  .vidrio::before,
+  .vidrio-oscuro::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    padding: 1.2px;
+    background: linear-gradient(
+      135deg,
+      rgb(255 255 255 / var(--vidrio-borde-luz)) 0%,
+      rgb(255 255 255 / 0.05) 32%,
+      rgb(255 255 255 / 0) 55%,
+      rgb(255 255 255 / calc(var(--vidrio-borde-luz) * 0.7)) 100%
+    );
+    mask: linear-gradient(black, black) content-box exclude, linear-gradient(black, black);
+    pointer-events: none;
+  }
+  .vidrio-oscuro {
+    --c-foco: var(--c-amarillo);
+    color: var(--c-blanco);
+    background: color-mix(in oklab, var(--c-anil) 62%, transparent);
+    box-shadow:
+      inset 1.5px 1.5px 0 -0.5px rgb(255 255 255 / 0.4),
+      inset 0 0 20px -8px rgb(255 255 255 / 0.35),
+      var(--sombra-alta);
+  }
+  /* Refracción real: el componente pone backdrop-filter con url(#…) y esta marca */
+  [data-liquido="si"] {
+    --vidrio-opacidad: 22%;
+  }
+  :root[data-tema="oscuro"] [data-liquido="si"] {
+    --vidrio-opacidad: 34%;
+  }
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .vidrio {
+      background: var(--c-superficie);
+    }
+    .vidrio-oscuro {
+      background: var(--c-anil);
+    }
+  }
+  @media (prefers-reduced-transparency: reduce) {
+    .vidrio,
+    [data-liquido="si"] {
+      background: var(--c-superficie);
+      backdrop-filter: none !important;
+    }
+    .vidrio-oscuro {
+      background: var(--c-anil);
+      backdrop-filter: none;
+    }
+  }
+
+  /* Velo inferior (móvil): el contenido se desvanece y desenfoca bajo la barra de vidrio */
+  /* ---------------- Ornamento mexicano ---------------- */
+  .banda-rebozo {
+    block-size: 5px;
+    background: var(--rebozo);
+  }
+  .banda-greca {
+    block-size: 18px;
+    background-color: var(--greca-color, var(--c-amarillo));
+    mask: var(--patron-greca) repeat-x left center / 32px 18px;
+  }
+
+  /* Portada: lago de noche (añil) con ondas de agua y luz */
+  .portada-agua {
+    position: relative;
+    isolation: isolate;
+    overflow: clip;
+    color: var(--c-blanco);
+    background:
+      radial-gradient(40rem 22rem at 100% 0%, color-mix(in oklab, var(--c-cielo) 55%, transparent), transparent 70%),
+      radial-gradient(30rem 20rem at 0% 100%, color-mix(in oklab, var(--c-azul) 70%, transparent), transparent 70%),
+      var(--c-anil);
+  }
+  .portada-agua::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-color: var(--c-cielo);
+    opacity: 0.22;
+    mask: var(--patron-agua) repeat 0 0 / 132px 46px;
+  }
+  .titulo-claro {
+    color: var(--c-blanco);
+  }
+
+  /* Portadas de actividad sin foto: un color de la marca por disciplina + rombos (IMJUVEC) */
+  .portada {
+    position: relative;
+    isolation: isolate;
+    overflow: clip;
+    background-color: var(--portada, var(--c-anil));
+    color: var(--portada-tinta, var(--c-blanco));
+  }
+  .portada::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-color: currentColor;
+    opacity: 0.16;
+    mask: var(--patron-rombos) repeat center / 30px 30px;
+  }
+  .portada-musica { --portada: var(--c-azul); }
+  .portada-danza { --portada: var(--c-rojo); }
+  .portada-artes_plasticas { --portada: var(--c-amarillo); --portada-tinta: var(--c-anil); }
+  .portada-teatro { --portada: var(--c-anil); }
+  .portada-literatura { --portada: var(--c-cielo); --portada-tinta: var(--c-anil); }
+  .portada-juventud { --portada: var(--c-coral); }
+  .portada-idiomas { --portada: var(--c-azul); }
+  .portada-cultura_pop { --portada: var(--c-rojo); }
+  .portada-autos { --portada: var(--c-carbon); --portada-tinta: var(--c-amarillo); }
+  .portada-campanas { --portada: var(--c-amarillo); --portada-tinta: var(--c-anil); }
+  .portada-otro { --portada: var(--c-grafito); }
+
+  /* Imagen con acercamiento al pasar el cursor (la tarjeta recorta) */
+  .zoom-imagen {
+    transition: transform var(--dur-larga) var(--curva);
+  }
+  :where(.group:hover, .group:focus-within) .zoom-imagen {
+    transform: scale(1.05);
+  }
+
+  /* Fichas desplazables: se desvanecen en el borde solo cuando hay más contenido */
+  .desplazable-x {
+    overflow-x: auto;
+    scrollbar-width: none;
+    --fade-tam: 2.5rem;
+    scroll-padding-inline: var(--fade-tam);
+  }
+  .desplazable-x::-webkit-scrollbar {
+    display: none;
+  }
+  @supports (animation-timeline: scroll()) {
+    .desplazable-x {
+      mask:
+        linear-gradient(black, black) no-clip subtract,
+        linear-gradient(to right, black, transparent) 0 0 / var(--fade-inicio) 100% no-repeat no-clip,
+        linear-gradient(to right, transparent, black) 100% 0 / var(--fade-fin) 100% no-repeat no-clip;
+      animation: fade-inicio linear both, fade-fin linear both;
+      animation-timeline: scroll(self inline);
+      animation-range: 0 var(--fade-tam), calc(100% - var(--fade-tam)) 100%;
+    }
+  }
+
+  /* ---------------- Botones: brillo que cruza y presión ---------------- */
+  .brillo {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .brillo::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: linear-gradient(110deg, transparent 30%, rgb(255 255 255 / 0.45) 48%, transparent 66%);
+    transform: translateX(-130%);
+    transition: transform 700ms var(--curva);
+  }
+  @media (hover: hover) {
+    .brillo:hover::after {
+      transform: translateX(130%);
+    }
+    .brillo:hover:not(:disabled) {
+      transform: translateY(-1px);
+    }
+  }
+
+  /* ---------------- Control segmentado con indicador que se desliza ---------------- */
+  .segmentado {
+    position: relative;
+    display: grid;
+    grid-auto-columns: minmax(0, 1fr);
+    grid-auto-flow: column;
+  }
+  .segmentado-indicador {
+    position: absolute;
+    inset-block: var(--seg-pad, 4px);
+    inset-inline-start: var(--seg-pad, 4px);
+    inline-size: calc((100% - var(--seg-pad, 4px) * 2) / var(--seg-n));
+    border-radius: 999px;
+    background: var(--c-marca);
+    box-shadow: inset 1px 1px 0 rgb(255 255 255 / 0.35), var(--sombra-suave);
+    transform: translateX(calc(var(--seg-i) * 100%));
+    transition: transform var(--dur-larga) var(--curva-liquida);
+  }
+  .segmentado > button {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ---------------- Texto rotativo (títulos dinámicos) ---------------- */
+  .rotativo {
+    cursor: default;
+    position: relative;
+    display: inline-flex;
+    vertical-align: bottom;
+    isolation: isolate;
+    padding-inline: 0.28em;
+    margin-inline: -0.04em;
+  }
+  .rotativo-fondo {
+    position: absolute;
+    inset: 0.04em 0;
+    z-index: -1;
+    border-radius: 0.24em;
+    background: var(--c-amarillo);
+    transform-origin: left center;
+    transition: transform var(--dur-larga) var(--curva-liquida);
+  }
+  .rotativo-palabra {
+    display: inline-flex;
+    overflow: hidden;
+    padding-block-end: 0.08em;
+    color: var(--c-anil);
+  }
+  .rotativo-letra {
+    display: inline-block;
+    white-space: pre;
+    animation: rotativo-entra 520ms var(--curva-liquida) both;
+    animation-delay: calc(var(--i) * 25ms);
+  }
+
+  /* ---------------- Revelado difuso con resaltado ---------------- */
+  .revelar-palabra {
+    display: inline-block;
+    white-space: pre-wrap;
+    animation: revelar 700ms var(--curva) both;
+    animation-delay: calc(var(--i) * 45ms);
+  }
+  .resaltado {
+    color: inherit;
+    font-weight: 700;
+    border-radius: 0.2em;
+    padding-inline: 0.12em;
+    background: linear-gradient(var(--c-resaltado), var(--c-resaltado)) no-repeat 0 88% / 0% 46%;
+    animation: subrayar 650ms var(--curva) forwards;
+    animation-delay: calc(var(--i) * 45ms + 450ms);
+  }
+
+  /* ---------------- Iconos de vidrio (elegir app de navegación) ---------------- */
+  .iconos-vidrio {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(6.5rem, 1fr));
+    gap: 1.75rem 1rem;
+    justify-items: center;
+  }
+  .icono-vidrio {
+    --tam: 4.6rem;
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: 0.75rem;
+    border-radius: 1.4rem;
+    text-decoration: none;
+    color: var(--c-tinta);
+    font-size: var(--fs-sm);
+    font-weight: 600;
+  }
+  .icono-vidrio-caja {
+    position: relative;
+    display: grid;
+    place-items: center;
+    inline-size: var(--tam);
+    block-size: var(--tam);
+  }
+  .icono-vidrio-placa {
+    position: absolute;
+    inset: 0;
+    border-radius: 1.4rem;
+    background: var(--placa);
+    transform: rotate(16deg) translate(10%, -6%);
+    transform-origin: 100% 100%;
+    transition: transform var(--dur-larga) var(--curva-liquida);
+  }
+  .icono-vidrio-cristal {
+    position: absolute;
+    inset: 0;
+    border-radius: 1.4rem;
+    background: rgb(255 255 255 / 0.18);
+    -webkit-backdrop-filter: blur(8px) saturate(1.6);
+    backdrop-filter: blur(8px) saturate(1.6);
+    box-shadow:
+      inset 1.5px 1.5px 0 -0.5px rgb(255 255 255 / 0.85),
+      inset -1px -1px 0 -0.5px rgb(255 255 255 / 0.35),
+      inset 0 0 14px -4px rgb(255 255 255 / 0.6),
+      0 14px 24px -14px rgb(24 24 27 / 0.4);
+    transition: transform var(--dur-larga) var(--curva-liquida);
+  }
+  .icono-vidrio-glifo {
+    position: relative;
+    color: var(--c-blanco);
+    filter: drop-shadow(0 1px 3px rgb(0 0 0 / 0.3));
+    transition: transform var(--dur-larga) var(--curva-liquida);
+  }
+  .icono-vidrio:is(:hover, :focus-visible) .icono-vidrio-placa {
+    transform: rotate(26deg) translate(14%, -10%);
+  }
+  .icono-vidrio:is(:hover, :focus-visible) .icono-vidrio-cristal,
+  .icono-vidrio:is(:hover, :focus-visible) .icono-vidrio-glifo {
+    transform: translateY(-5px);
+  }
+  .icono-vidrio:active .icono-vidrio-cristal {
+    transform: scale(0.94);
+  }
+  .icono-vidrio:focus-visible {
+    outline-offset: 6px;
+  }
+
+  /* ---------------- Boleto desprendible (pase) ---------------- */
+  .boleto-escena {
+    perspective: 1200px;
+  }
+  .boleto {
+    --rx: 0deg;
+    --ry: 0deg;
+    --mx: 30%;
+    --my: 20%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    transform-style: preserve-3d;
+    transform: rotate(var(--giro, 1.5deg)) rotateX(var(--rx)) rotateY(var(--ry));
+    transition: transform 500ms var(--curva-liquida);
+    filter: drop-shadow(0 24px 30px rgb(11 16 38 / 0.35));
+  }
+  .boleto.inclinando {
+    transition: transform 80ms linear;
+  }
+  .boleto[data-orientacion="horizontal"] {
+    flex-direction: row;
+  }
+  .boleto-parte {
+    position: relative;
+    background: var(--c-superficie);
+    color: var(--c-tinta);
+    overflow: hidden;
+  }
+  /* Brillo que sigue al puntero */
+  .boleto-parte::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(28rem 20rem at var(--mx) var(--my), rgb(255 255 255 / 0.28), transparent 60%);
+    mix-blend-mode: soft-light;
+  }
+  /* Muescas laterales y medios agujeros de la perforación */
+  .boleto[data-orientacion="vertical"] .boleto-cuerpo {
+    border-radius: 28px 28px 0 0;
+    mask:
+      radial-gradient(circle 13px at 0 100%, transparent 98%, black) 0 0 / 51% 100% no-repeat,
+      radial-gradient(circle 13px at 100% 100%, transparent 98%, black) 100% 0 / 51% 100% no-repeat;
+  }
+  .boleto[data-orientacion="vertical"] .boleto-talon {
+    border-radius: 0 0 28px 28px;
+    mask:
+      radial-gradient(circle 13px at 0 0, transparent 98%, black) 0 0 / 51% 100% no-repeat,
+      radial-gradient(circle 13px at 100% 0, transparent 98%, black) 100% 0 / 51% 100% no-repeat;
+  }
+  .boleto[data-orientacion="horizontal"] .boleto-cuerpo {
+    border-radius: 28px 0 0 28px;
+    mask:
+      radial-gradient(circle 13px at 100% 0, transparent 98%, black) 0 0 / 100% 51% no-repeat,
+      radial-gradient(circle 13px at 100% 100%, transparent 98%, black) 0 100% / 100% 51% no-repeat;
+  }
+  .boleto[data-orientacion="horizontal"] .boleto-talon {
+    border-radius: 0 28px 28px 0;
+    mask:
+      radial-gradient(circle 13px at 0 0, transparent 98%, black) 0 0 / 100% 51% no-repeat,
+      radial-gradient(circle 13px at 0 100%, transparent 98%, black) 0 100% / 100% 51% no-repeat;
+  }
+  .boleto-perforacion {
+    position: absolute;
+    z-index: 2;
+    pointer-events: none;
+    background: radial-gradient(circle 3.5px, var(--c-linea) 92%, transparent) repeat;
+  }
+  .boleto[data-orientacion="vertical"] .boleto-perforacion {
+    inset-inline: 22px;
+    inset-block-start: -4px;
+    block-size: 8px;
+    background-size: 16px 8px;
+    background-repeat: repeat-x;
+  }
+  .boleto[data-orientacion="horizontal"] .boleto-perforacion {
+    inset-block: 22px;
+    inset-inline-start: -4px;
+    inline-size: 8px;
+    background-size: 8px 16px;
+    background-repeat: repeat-y;
+  }
+  .boleto-talon {
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: grab;
+    transform: translate(var(--tx, 0px), var(--ty, 0px)) rotate(var(--rt, 0deg));
+    transform-origin: var(--origen-talon, 100% 0%);
+    transition:
+      transform 450ms var(--curva-liquida),
+      opacity 450ms var(--curva);
+  }
+  .boleto-talon.arrastrando {
+    cursor: grabbing;
+    transition: none;
+  }
+  .boleto-talon.cayendo {
+    transition:
+      transform 750ms cubic-bezier(0.55, 0, 0.8, 0.2),
+      opacity 750ms ease-in;
+    opacity: 0;
+  }
+  .boleto-talon[aria-disabled="true"] {
+    cursor: default;
+  }
+  /* Borde rasgado una vez desprendido */
+  .boleto.roto[data-orientacion="vertical"] .boleto-cuerpo {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    mask: conic-gradient(from -45deg at bottom, transparent, black 1deg 89deg, transparent 90deg) 50% / 14px 100%;
+  }
+  .boleto.roto[data-orientacion="horizontal"] .boleto-cuerpo {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    mask: conic-gradient(from -135deg at right, transparent, black 1deg 89deg, transparent 90deg) 50% / 100% 14px;
+  }
+  .boleto-medio {
+    border-radius: 18px;
+  }
+  .modal-boleto {
+    max-width: none;
+    max-height: none;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    overflow: auto;
+    scrollbar-width: none;
+  }
+  .modal-boleto[open] {
+    animation: boleto-entra 520ms var(--curva-liquida) both;
+  }
+  .modal-boleto.cerrando {
+    animation: boleto-sale 260ms var(--curva) both;
+  }
+  .modal-boleto::backdrop {
+    background: color-mix(in oklab, var(--c-noche) 55%, transparent);
+    -webkit-backdrop-filter: blur(10px) saturate(1.2);
+    backdrop-filter: blur(10px) saturate(1.2);
+  }
+
+  /* ---------------- Mapa cultural ---------------- */
+  .mapa-cultural {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    border-radius: var(--radius-2xl);
+    border: 1px solid var(--c-linea);
+    background: var(--c-hundido);
+    box-shadow: var(--sombra-suave);
+  }
+  .mapa-cultural .leaflet-container {
+    width: 100%;
+    height: 100%;
+    background: var(--c-hundido);
+    font: inherit;
+  }
+  /* Calles en gris cálido: el mapa no compite con la marca */
+  /* OpenStreetMap lavado: gris claro, casi sin color, para que solo destaquen los rombos */
+  .mapa-cultural .mosaico-osm {
+    filter: grayscale(1) contrast(0.78) brightness(1.13);
+  }
+  :root[data-tema="oscuro"] .mapa-cultural .mosaico-osm {
+    filter: grayscale(1) invert(1) contrast(0.8) brightness(0.82) sepia(0.2) hue-rotate(190deg);
+  }
+  .mapa-cultural .leaflet-control-zoom {
+    border: 0;
+    margin: 12px;
+    border-radius: 999px;
+    overflow: hidden;
+    box-shadow: var(--sombra-suave);
+  }
+  .mapa-cultural .leaflet-control-zoom a {
+    width: 40px;
+    height: 40px;
+    line-height: 40px;
+    background: color-mix(in oklab, var(--c-superficie) 80%, transparent);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    color: var(--c-marca);
+    border-color: var(--c-linea);
+  }
+  .mapa-cultural .leaflet-control-attribution {
+    background: color-mix(in oklab, var(--c-superficie) 75%, transparent);
+    color: var(--c-tenue);
+    font-size: 10px;
+    border-top-left-radius: 8px;
+  }
+  .mapa-cultural .leaflet-control-attribution a {
+    color: var(--c-marca);
+  }
+  /* Marcador: rombo de IMJUVEC con el número de actividades */
+  .pin {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+  }
+  .pin-rombo {
+    position: absolute;
+    inset: 6px;
+    border-radius: 7px;
+    background: var(--c-anil);
+    border: 2.5px solid var(--c-blanco);
+    box-shadow: 0 6px 14px -4px rgb(11 16 38 / 0.55);
+    transform: rotate(45deg);
+    transition: transform var(--dur-corta) var(--curva-liquida), background-color var(--dur-micro);
+  }
+  .pin-num {
+    position: relative;
+    color: var(--c-blanco);
+    font-weight: 800;
+    font-size: 13px;
+  }
+  .pin.activo .pin-rombo,
+  .leaflet-marker-icon:hover .pin-rombo,
+  .leaflet-marker-icon:focus-visible .pin-rombo {
+    background: var(--c-rojo);
+    transform: rotate(45deg) scale(1.18);
+  }
+  .leaflet-marker-icon:focus-visible {
+    outline: 3px solid var(--c-foco);
+    outline-offset: 2px;
+    border-radius: 8px;
+  }
+  .pin-yo {
+    display: block;
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    background: var(--c-azul);
+    border: 3px solid var(--c-blanco);
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--c-azul) 50%, transparent);
+    animation: pulso 2.2s var(--curva) infinite;
+  }
+
+
+  /* ---------------- Portada histórica (inicio) ----------------
+     Noche antigua: añil profundo, viñeta sepia y fuegos artificiales. */
+  .portada-historica {
+    position: relative;
+    isolation: isolate;
+    overflow: clip;
+    color: var(--c-blanco);
+    background:
+      radial-gradient(120% 90% at 50% 120%, color-mix(in oklab, var(--c-ocre) 30%, transparent), transparent 60%),
+      radial-gradient(60% 70% at 85% 10%, color-mix(in oklab, var(--c-azul) 45%, transparent), transparent 70%),
+      linear-gradient(180deg, var(--c-noche), color-mix(in oklab, var(--c-anil) 70%, var(--c-noche)));
+  }
+  .portada-historica::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-color: var(--c-ocre);
+    opacity: 0.16;
+    mask: var(--patron-agua) repeat 0 0 / 132px 46px, linear-gradient(to top, black, transparent 80%);
+    mask-composite: intersect;
+  }
+  /* Viñeta sepia */
+  .portada-historica::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: radial-gradient(120% 100% at 50% 40%, transparent 55%, rgb(0 0 0 / 0.4));
+  }
+  .portada-historica > * {
+    position: relative;
+    z-index: 2;
+  }
+  .portada-historica > .cielo-candil {
+    position: absolute;
+    z-index: 0;
+  }
+
+  /* ---------------- Mapa en dispositivo ---------------- */
+  /* El dispositivo se corta en el borde inferior, como asomándose desde el panel */
+  .mapa-escena {
+    --corte: clamp(2.5rem, 7cqi, 4.5rem);
+    position: relative;
+    display: grid;
+    place-items: center;
+    padding-block-start: 0.5rem;
+    overflow: clip;
+    container-type: inline-size;
+  }
+  /* Halo de luz detrás del dispositivo: los mismos destellos que cambian de color */
+  .mapa-escena::before {
+    content: "";
+    position: absolute;
+    z-index: 1;
+    inset: 8% 2% 0;
+    border-radius: 50%;
+    background:
+      radial-gradient(45% 55% at 25% 60%, var(--destello-a), transparent 70%),
+      radial-gradient(45% 55% at 75% 45%, var(--destello-b), transparent 70%);
+    filter: blur(48px);
+    opacity: 0.9;
+    animation: destellos 14s ease-in-out infinite alternate;
+    pointer-events: none;
+  }
+  .mapa-panel {
+    position: absolute;
+    inset-inline: 0;
+    inset-block: 22% 0;
+    z-index: 0;
+    border-radius: 2.5rem;
+    overflow: clip;
+    isolation: isolate;
+    background:
+      radial-gradient(38% 60% at 12% 55%, var(--destello-a), transparent 70%),
+      radial-gradient(38% 60% at 88% 40%, var(--destello-b), transparent 70%),
+      linear-gradient(135deg, var(--c-anil), var(--c-azul) 55%, var(--c-anil));
+    animation: destellos 14s ease-in-out infinite alternate;
+  }
+  .mapa-panel::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: var(--c-blanco);
+    opacity: 0.12;
+    mask: var(--patron-agua) repeat 0 0 / 120px 42px;
+  }
+  .dispositivo {
+    position: relative;
+    z-index: 2;
+    inline-size: min(100%, 54rem);
+    aspect-ratio: 16 / 10;
+    padding: 12px;
+    border-radius: 38px;
+    margin-block-end: calc(-1 * var(--corte));
+    background: var(--c-bisel);
+    box-shadow:
+      inset 0 0 0 1.5px rgb(255 255 255 / 0.14),
+      0 0 0 1px rgb(0 0 0 / 0.4),
+      0 30px 60px -24px rgb(11 16 38 / 0.6);
+  }
+  .dispositivo::before {
+    /* cámara de la tableta */
+    content: "";
+    position: absolute;
+    inset-block-start: 4px;
+    inset-inline-start: 50%;
+    width: 5px;
+    height: 5px;
+    border-radius: 999px;
+    background: #2a2d36;
+    translate: -50% 0;
+  }
+  .dispositivo-pantalla {
+    position: relative;
+    inline-size: 100%;
+    block-size: 100%;
+    border-radius: 26px;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  @media (max-width: 47.99rem) {
+    .mapa-escena {
+      --corte: clamp(2.5rem, 12cqi, 3.5rem);
+    }
+    .dispositivo {
+      inline-size: min(84vw, 22rem);
+      aspect-ratio: 9 / 13;
+      padding: 9px;
+      border-radius: 44px;
+    }
+    .dispositivo::before {
+      /* isla del celular */
+      inset-block-start: 18px;
+      width: 32%;
+      height: 22px;
+      background: #000;
+      z-index: 2;
+    }
+    .dispositivo-pantalla {
+      border-radius: 36px;
+    }
+    .mapa-panel {
+      inset-block: 18% 0;
+      inset-inline: -0.5rem;
+      border-radius: 2rem;
+    }
+  }
+
+  .mapa-plano {
+    position: relative;
+    block-size: clamp(22rem, 62dvh, 34rem);
+    border-radius: 1.75rem;
+    overflow: hidden;
+    isolation: isolate;
+    box-shadow: inset 0 0 0 1px var(--c-linea), var(--sombra-suave);
+  }
+
+  /* ---------------- Historia de Coacalco: murales ---------------- */
+  .historia {
+    position: relative;
+  }
+  .mural {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    border-radius: 1.4rem;
+    overflow: hidden;
+    background: var(--c-mural);
+    box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.2), var(--sombra-suave);
+  }
+  .mural svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  /* Textura de enlucido sobre el mural */
+  .mural::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 7 -3.2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E") 0 0 / 160px 160px;
+    opacity: 0.35;
+    mix-blend-mode: multiply;
+  }
+  .m-fondo { fill: var(--c-mural); }
+  .m-fondo-2 { fill: var(--c-mural-oscuro); }
+  .m-hueso { fill: var(--c-hueso); }
+  .m-ocre { fill: var(--c-ocre); }
+  .m-jade { fill: var(--c-jade); }
+  .m-amarillo { fill: var(--c-amarillo); }
+  .m-cielo { fill: var(--c-cielo); }
+  .m-trazo { fill: none; stroke: var(--c-hueso); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+  .m-trazo-ocre { fill: none; stroke: var(--c-ocre); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+  .m-trazo-jade { fill: none; stroke: var(--c-jade); stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* Mosaico que se revela con el desplazamiento */
+  .mosaico-escena {
+    --hueco: clamp(0.5rem, 2.4vw, 1.75rem);
+    position: relative;
+    inline-size: min(100%, 46rem, calc((100dvh - 8rem) * 4 / 3));
+  }
+  .mosaico-rejilla {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, auto);
+    gap: var(--hueco);
+    transform-origin: 50% 50%;
+    will-change: transform;
+  }
+  .mosaico-pieza {
+    position: relative;
+    will-change: transform, opacity;
+  }
+  .mosaico-pieza .mural {
+    aspect-ratio: 4 / 3;
+    border-radius: clamp(0.6rem, 1.6vw, 1.1rem);
+    box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.2), 0 18px 40px -20px rgb(11 16 38 / 0.55);
+  }
+  .mosaico-fecha {
+    position: absolute;
+    inset-inline-start: 0.5rem;
+    inset-block-end: 0.5rem;
+    padding: 0.1rem 0.55rem;
+    border-radius: 999px;
+    background: rgb(0 0 0 / 0.45);
+    color: var(--c-hueso);
+    font-size: 0.72rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  @media (max-width: 39.99rem) {
+    .mosaico-fecha {
+      display: none;
+    }
+  }
+  .mosaico-titulo {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-content: center;
+    text-align: center;
+    pointer-events: none;
+    font-size: clamp(1.05rem, 4.4vw, 2.6rem);
+  }
+  .mosaico-sub {
+    margin-block-start: 0.4em;
+    font-size: clamp(0.8rem, 1.6vw, 1rem);
+    opacity: var(--sub, 0);
+    translate: 0 calc((1 - var(--sub, 0)) * 8px);
+  }
+  /* Línea del tiempo que queda al despejarse el mosaico */
+  .historia-linea {
+    display: grid;
+    gap: 1.5rem 2.5rem;
+  }
+  @media (min-width: 64rem) {
+    .historia-linea {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  .historia-hito {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  .historia-hito .mural {
+    border-radius: 0.8rem;
+  }
+
+  /* ---------------- Pie de página: firma en bajorrelieve ---------------- */
+  .bajorrelieve {
+    display: inline-block;
+    filter: drop-shadow(0 1px 0 rgb(255 255 255 / 0.9)) drop-shadow(0 -1px 0 rgb(0 0 0 / 0.18));
+  }
+  .bajorrelieve > span {
+    display: block;
+    background-color: color-mix(in oklab, var(--c-fondo) 84%, var(--c-tinta));
+    mask: var(--firma) no-repeat center / contain;
+  }
+  :root[data-tema="oscuro"] .bajorrelieve {
+    filter: drop-shadow(0 1px 0 rgb(255 255 255 / 0.08)) drop-shadow(0 -1px 0 rgb(0 0 0 / 0.6));
+  }
+
+  /* ---------------- Luces de candil (modo oscuro) ---------------- */
+  .cielo-candil {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Ítem activo de navegación: forma + peso, no solo color (WCAG 1.4.1) */
+  @media (forced-colors: active) {
+    [aria-current="page"] {
+      outline: 2px solid CanvasText;
+    }
+  }
+}
+
+@keyframes fade-inicio {
+  to {
+    --fade-inicio: var(--fade-tam);
+  }
+}
+@keyframes fade-fin {
+  from {
+    --fade-fin: var(--fade-tam);
+  }
+}
+@keyframes rotativo-entra {
+  from {
+    transform: translateY(105%);
+    opacity: 0;
+  }
+}
+@keyframes revelar {
+  from {
+    opacity: 0;
+    filter: blur(8px);
+    transform: translateY(0.25em);
+  }
+}
+@keyframes subrayar {
+  to {
+    background-size: 100% 46%;
+  }
+}
+@keyframes boleto-entra {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.94);
+  }
+}
+@keyframes boleto-sale {
+  to {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+  }
+}
+@keyframes pulso {
+  70% {
+    box-shadow: 0 0 0 14px transparent;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+@keyframes destellos {
+  0% {
+    --destello-a: color-mix(in oklab, var(--c-cielo) 85%, transparent);
+    --destello-b: color-mix(in oklab, var(--c-amarillo) 55%, transparent);
+  }
+  25% {
+    --destello-a: color-mix(in oklab, var(--c-coral) 55%, transparent);
+    --destello-b: color-mix(in oklab, var(--c-cielo) 85%, transparent);
+  }
+  50% {
+    --destello-a: color-mix(in oklab, var(--c-amarillo) 55%, transparent);
+    --destello-b: color-mix(in oklab, var(--c-azul) 90%, transparent);
+  }
+  75% {
+    --destello-a: color-mix(in oklab, var(--c-azul) 90%, transparent);
+    --destello-b: color-mix(in oklab, var(--c-rojo) 45%, transparent);
+  }
+  100% {
+    --destello-a: color-mix(in oklab, var(--c-cielo) 85%, transparent);
+    --destello-b: color-mix(in oklab, var(--c-coral) 50%, transparent);
+  }
+}
+@keyframes entrar-suave {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
   }
 }

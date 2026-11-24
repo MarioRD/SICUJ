@@ -57,7 +57,8 @@ export default function TallerDetallePage() {
 
       <div className="tarjeta overflow-hidden">
         <PortadaActividad categoria={taller.categoria} imagenUrl={taller.imagenUrl} className="aspect-[16/8] max-h-[45vh]" />
-        <div className="flex flex-col gap-4 p-5">
+        <div className="banda-rebozo" aria-hidden />
+        <div className="flex flex-col gap-4 p-5 sm:p-7">
           <div className="flex flex-wrap gap-1.5">
             <Insignia tono="marca">{taller.tipo === 'taller' ? 'Taller' : 'Evento'}</Insignia>
             <Insignia>{CATEGORIAS[taller.categoria]}</Insignia>
@@ -68,10 +69,10 @@ export default function TallerDetallePage() {
 
           <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {datos.map(({ icono: Icono, etiqueta, valor }) => (
-              <div key={etiqueta} className="flex items-start gap-3 rounded-lg bg-fondo p-3">
+              <div key={etiqueta} className="flex items-start gap-3 rounded-lg bg-hundido p-3">
                 <Icono aria-hidden className="mt-0.5 size-5 shrink-0 text-marca" />
                 <div>
-                  <dt className="text-xs font-semibold text-tenue uppercase">{etiqueta}</dt>
+                  <dt className="text-sm text-tenue">{etiqueta}</dt>
                   <dd className="font-semibold">{valor}</dd>
                 </div>
               </div>
@@ -98,7 +99,7 @@ export default function TallerDetallePage() {
       {/* Botón principal fijo sobre la barra inferior: siempre al alcance del pulgar */}
       <div
         className="sticky z-20 -mx-1"
-        style={{ bottom: 'calc(env(safe-area-inset-bottom) + var(--toque-min) * 1.25 + 0.75rem)' }}
+        style={{ bottom: 'calc(var(--alto-barra) + 0.75rem)' }}
       >
         {libres > 0 ? (
           <EnlaceBoton to={`/taller/${taller.id}/inscripcion`} variante="acento" tamano="lg" className="w-full shadow-lg">

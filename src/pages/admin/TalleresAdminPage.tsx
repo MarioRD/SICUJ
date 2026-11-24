@@ -224,7 +224,7 @@ export default function TalleresAdminPage() {
 
       <div className="tarjeta overflow-x-auto">
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-linea bg-fondo text-xs text-tenue uppercase">
+          <thead className="border-b border-linea bg-hundido text-sm text-tenue">
             <tr>
               <th scope="col" className="px-4 py-3">Actividad</th>
               <th scope="col" className="px-3 py-3">Recinto</th>
@@ -236,7 +236,7 @@ export default function TalleresAdminPage() {
           </thead>
           <tbody>
             {visibles.map((t) => (
-              <tr key={t.id} className="border-b border-linea last:border-0 hover:bg-fondo/60">
+              <tr key={t.id} className="border-b border-linea last:border-0 hover:bg-hundido/60">
                 <th scope="row" className="px-4 py-3">
                   <span className="block font-semibold">{t.titulo}</span>
                   <span className="text-xs font-normal text-tenue">

@@ -1,11 +1,11 @@
-import { LoaderCircle, type LucideIcon } from 'lucide-react';
+import { LoaderCircle, X, type LucideIcon } from 'lucide-react';
 import { useEffect, useRef, type ReactNode } from 'react';
 
 export function SaltarAlContenido() {
   return (
     <a
       href="#contenido"
-      className="fixed top-2 left-2 z-[60] -translate-y-24 rounded-md bg-acento px-4 py-2 font-bold text-acento-tinta focus:translate-y-0"
+      className="fixed top-2 left-2 z-[60] -translate-y-24 rounded-full bg-acento px-5 py-2 font-bold text-acento-tinta shadow-lg focus:translate-y-0"
     >
       Saltar al contenido principal
     </a>
@@ -14,8 +14,8 @@ export function SaltarAlContenido() {
 
 type TonoInsignia = 'neutro' | 'marca' | 'ok' | 'error' | 'aviso';
 const TONOS: Record<TonoInsignia, string> = {
-  neutro: 'bg-tinta/8 text-tinta',
-  marca: 'bg-marca/12 text-marca',
+  neutro: 'bg-hundido text-tinta',
+  marca: 'bg-marca text-marca-tinta',
   ok: 'bg-ok-fondo text-ok',
   error: 'bg-error-fondo text-error',
   aviso: 'bg-aviso-fondo text-aviso',
@@ -23,7 +23,7 @@ const TONOS: Record<TonoInsignia, string> = {
 
 export function Insignia({ tono = 'neutro', children }: { tono?: TonoInsignia; children: ReactNode }) {
   return (
-    <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold ${TONOS[tono]}`}>{children}</span>
+    <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ${TONOS[tono]}`}>{children}</span>
   );
 }
 
@@ -38,9 +38,12 @@ export function Cargando({ texto = 'Cargando…' }: { texto?: string }) {
 
 export function Vacio({ icono: Icono, titulo, children }: { icono: LucideIcon; titulo: string; children?: ReactNode }) {
   return (
-    <div className="tarjeta flex flex-col items-center gap-3 px-6 py-10 text-center">
-      <Icono aria-hidden className="size-10 text-tenue" />
-      <p className="text-lg font-bold">{titulo}</p>
+    <div className="tarjeta flex flex-col items-center gap-3 overflow-hidden px-6 pt-0 pb-10 text-center">
+      <div className="banda-greca -mx-6 mb-5 self-stretch [--greca-color:var(--c-anil)] opacity-15" aria-hidden />
+      <span className="grid size-16 place-items-center rounded-full bg-marca/8 text-marca">
+        <Icono aria-hidden className="size-8" strokeWidth={1.7} />
+      </span>
+      <p className="fuente-display text-lg font-bold text-titulo">{titulo}</p>
       {children && <div className="text-sm text-tenue">{children}</div>}
     </div>
   );
@@ -54,7 +57,7 @@ export function Alerta({ tono = 'aviso', titulo, children }: { tono?: 'aviso' | 
     info: 'bg-marca/6 border-marca text-tinta',
   }[tono];
   return (
-    <div className={`rounded-lg border-l-4 p-3 text-sm ${estilos}`} role={tono === 'error' ? 'alert' : undefined}>
+    <div className={`rounded-lg border-l-4 px-4 py-3 text-sm ${estilos}`} role={tono === 'error' ? 'alert' : undefined}>
       {titulo && <p className="mb-1 font-bold">{titulo}</p>}
       {children}
     </div>
@@ -72,9 +75,9 @@ export function Barra({ valor, maximo, etiqueta }: { valor: number; maximo: numb
       aria-valuemin={0}
       aria-valuemax={maximo}
       aria-valuenow={valor}
-      className="h-2 w-full overflow-hidden rounded-full bg-tinta/10"
+      className="h-2 w-full overflow-hidden rounded-full bg-hundido"
     >
-      <div className={`h-full rounded-full transition-[width] ${color}`} style={{ width: `${pct}%` }} />
+      <div className={`h-full origin-left rounded-full transition-transform duration-(--dur-corta) ${color}`} style={{ transform: `scaleX(${pct / 100})` }} />
     </div>
   );
 }
@@ -106,17 +109,18 @@ export function Modal({
       ref={ref}
       onClose={alCerrar}
       aria-labelledby="modal-titulo"
-      className="m-auto max-h-[92dvh] w-[94vw] rounded-xl border-2 border-linea bg-superficie p-0 text-tinta shadow-2xl"
+      className="m-auto max-h-[92dvh] w-[94vw] overflow-hidden rounded-2xl border border-linea bg-superficie p-0 text-tinta shadow-2xl"
       style={{ maxWidth: ancho }}
     >
       {abierto && (
         <div className="flex max-h-[92dvh] flex-col">
+          <div className="banda-rebozo shrink-0" aria-hidden />
           <header className="flex items-center justify-between gap-4 border-b border-linea px-6 py-4">
             <h2 id="modal-titulo" className="text-xl font-bold">
               {titulo}
             </h2>
-            <button type="button" onClick={alCerrar} className="toque rounded-md text-2xl leading-none hover:bg-tinta/6" aria-label="Cerrar">
-              ×
+            <button type="button" onClick={alCerrar} className="toque grid place-items-center rounded-full hover:bg-marca/8" aria-label="Cerrar">
+              <X aria-hidden className="size-5" />
             </button>
           </header>
           <div className="overflow-y-auto px-6 py-5">{children}</div>
