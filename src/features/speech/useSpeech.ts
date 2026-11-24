@@ -32,7 +32,7 @@ export function dividirEnFrases(texto: string, max = 220): string[] {
   return partes;
 }
 
-function elegirVoz(): SpeechSynthesisVoice | null {
+export function elegirVoz(): SpeechSynthesisVoice | null {
   const voces = window.speechSynthesis.getVoices();
   return (
     voces.find((v) => v.lang === 'es-MX') ??

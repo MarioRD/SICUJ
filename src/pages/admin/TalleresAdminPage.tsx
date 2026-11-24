@@ -3,6 +3,7 @@ import { useMemo, useState, type FormEvent } from 'react';
 import { Alerta, Cargando, Insignia } from '@/components/ui/Basicos';
 import { Boton } from '@/components/ui/Boton';
 import { AreaTexto, Campo, Selector } from '@/components/ui/Campo';
+import { CampoFecha } from '@/components/ui/CampoFecha';
 import { Modal } from '@/components/ui/Basicos';
 import { SubirImagen } from '@/components/admin/SubirImagen';
 import { useAvisos } from '@/context/AvisosContext';
@@ -117,8 +118,8 @@ function FormularioTaller({ taller, recintos, alTerminar }: { taller?: Taller; r
         ))}
       </Selector>
       <Campo etiqueta="Instructor / responsable" value={f.instructor} onChange={(e) => set('instructor', e.target.value)} opcional />
-      <Campo etiqueta="Fecha de inicio" type="date" value={f.fechaInicio} onChange={(e) => set('fechaInicio', e.target.value)} required />
-      <Campo etiqueta="Fecha de fin" type="date" value={f.fechaFin} min={f.fechaInicio} onChange={(e) => set('fechaFin', e.target.value)} required />
+      <CampoFecha etiqueta="Fecha de inicio" value={f.fechaInicio} onChange={(v) => set('fechaInicio', v)} required />
+      <CampoFecha etiqueta="Fecha de fin" value={f.fechaFin} min={f.fechaInicio || undefined} onChange={(v) => set('fechaFin', v)} required />
       <Campo className="md:col-span-2" etiqueta="Horario" placeholder="Lun y Mié · 16:00 – 18:00" value={f.horario} onChange={(e) => set('horario', e.target.value)} required />
       <div className="grid grid-cols-2 gap-4">
         <Campo etiqueta="Edad mínima" type="number" min={0} max={120} value={f.edadMin} onChange={(e) => set('edadMin', e.target.value)} opcional />

@@ -1,6 +1,7 @@
 /**
  * Datos de DEMOSTRACIÓN. Los recintos son lugares reales de Coacalco (coordenadas de
  * OpenStreetMap, aproximadas); las actividades, horarios e instructores son ficticios.
+ * Las cuentas demo solo existen en modo local; en Firebase se usan cuentas reales.
  */
 import type { Categoria, Recinto, Taller, TipoActividad, Usuario } from '@/types/models';
 import type { AlmacenLocal } from './store';
@@ -329,55 +330,51 @@ const TALLERES: SemillaTaller[] = [
   },
 ];
 
-export function sembrarDatosDemo(almacen: AlmacenLocal, ahora = Date.now()) {
+/** Recintos y actividades de ejemplo con fechas relativas a hoy (sirve para el modo local y para Firestore). */
+export function construirDatosDemo(ahora = Date.now()): { recintos: Recinto[]; talleres: Taller[] } {
   const hoy = new Date(ahora);
   hoy.setHours(0, 0, 0, 0);
   const base = hoy.getTime();
 
+  const recintos = RECINTOS.map(
+    (r): Recinto => ({ ...r, imagenUrl: null, activo: true, afluenciaTotal: 0, creadoEn: ahora, actualizadoEn: ahora }),
+  );
+  const porId = new Map(recintos.map((r) => [r.id, r]));
+  const talleres = TALLERES.map((s, i): Taller => {
+    const recinto = porId.get(s.recintoId)!;
+    return {
+      id: `taller-demo-${i + 1}`,
+      tipo: s.tipo,
+      titulo: s.titulo,
+      descripcion: s.descripcion,
+      categoria: s.categoria,
+      recintoId: recinto.id,
+      recintoNombre: recinto.nombre,
+      recintoUbicacion: recinto.ubicacion,
+      instructor: s.instructor,
+      fechaInicio: base + s.inicioEnDias * DIA,
+      fechaFin: base + (s.inicioEnDias + s.duracionDias) * DIA + DIA - 1,
+      horario: s.horario,
+      edadMin: s.edadMin,
+      edadMax: s.edadMax,
+      cupoMaximo: s.cupoMaximo,
+      inscritos: s.inscritos,
+      asistentes: 0,
+      imagenUrl: null,
+      costo: s.costo,
+      activo: true,
+      creadoEn: ahora,
+      actualizadoEn: ahora,
+    };
+  });
+  return { recintos, talleres };
+}
+
+export function sembrarDatosDemo(almacen: AlmacenLocal, ahora = Date.now()) {
+  const { recintos, talleres } = construirDatosDemo(ahora);
   almacen.transaccion((tx) => {
-    const recintos = new Map<string, Recinto>();
-    for (const r of RECINTOS) {
-      const recinto: Recinto = {
-        ...r,
-        imagenUrl: null,
-        activo: true,
-        afluenciaTotal: 0,
-        creadoEn: ahora,
-        actualizadoEn: ahora,
-      };
-      recintos.set(r.id, recinto);
-      tx.crear('recintos', recinto);
-    }
-
-    TALLERES.forEach((s, i) => {
-      const recinto = recintos.get(s.recintoId)!;
-      const taller: Taller = {
-        id: `taller-demo-${i + 1}`,
-        tipo: s.tipo,
-        titulo: s.titulo,
-        descripcion: s.descripcion,
-        categoria: s.categoria,
-        recintoId: recinto.id,
-        recintoNombre: recinto.nombre,
-        recintoUbicacion: recinto.ubicacion,
-        instructor: s.instructor,
-        fechaInicio: base + s.inicioEnDias * DIA,
-        fechaFin: base + (s.inicioEnDias + s.duracionDias) * DIA + DIA - 1,
-        horario: s.horario,
-        edadMin: s.edadMin,
-        edadMax: s.edadMax,
-        cupoMaximo: s.cupoMaximo,
-        inscritos: s.inscritos,
-        asistentes: 0,
-        imagenUrl: null,
-        costo: s.costo,
-        activo: true,
-        creadoEn: ahora,
-        actualizadoEn: ahora,
-      };
-      tx.crear('talleres', taller);
-    });
-
+    for (const r of recintos) tx.crear('recintos', r);
+    for (const t of talleres) tx.crear('talleres', t);
     for (const c of CUENTAS_DEMO) {
       const usuario: Usuario = { id: c.id, nombre: c.nombre, email: c.email, rol: c.rol, activo: true, creadoEn: ahora };
       tx.crear('usuarios', usuario);

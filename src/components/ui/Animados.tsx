@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { Vidrio } from '@/components/ui/Vidrio';
 
 const prefiereQuieto = () =>
   typeof window !== 'undefined' &&
@@ -142,10 +143,12 @@ export function ControlSegmentado<T extends string>({
     requestAnimationFrame(() => document.getElementById(`seg-${etiqueta}-${sig.valor}`)?.focus());
   };
   return (
-    <div
+    <Vidrio
       role="radiogroup"
       aria-label={etiqueta}
-      className={`segmentado vidrio rounded-full p-1 ${className}`}
+      fuerza={16}
+      bisel={14}
+      className={`segmentado rounded-full p-1 ${className}`}
       style={{ ['--seg-n' as string]: opciones.length, ['--seg-i' as string]: indice }}
     >
       <span aria-hidden className="segmentado-indicador" />
@@ -170,6 +173,6 @@ export function ControlSegmentado<T extends string>({
           </button>
         );
       })}
-    </div>
+    </Vidrio>
   );
 }

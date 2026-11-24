@@ -168,14 +168,17 @@ export function BoletoPase({ inscripcion, alCerrar }: { inscripcion: Inscripcion
       onClick={(e) => e.target === e.currentTarget && salir()}
     >
       <div className="grid min-h-full place-items-center p-4 py-10" onClick={(e) => e.target === e.currentTarget && salir()}>
-        <button
+        <Vidrio
+          as="button"
           type="button"
+          fuerza={12}
+          bisel={12}
           onClick={() => salir()}
-          className="vidrio fixed top-[max(1rem,env(safe-area-inset-top))] right-4 z-10 grid size-12 place-items-center rounded-full text-tinta"
+          className="fixed! top-[max(1rem,env(safe-area-inset-top))] right-4 z-10 grid size-12 place-items-center rounded-full text-tinta"
           aria-label="Cerrar pase"
         >
           <X aria-hidden className="size-5" />
-        </button>
+        </Vidrio>
 
         <div className="boleto-escena relative" style={{ width: ancho }} onPointerMove={inclinar} onPointerLeave={enderezar}>
           <div

@@ -1,5 +1,5 @@
-import { LocateFixed, Search, SearchX } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { ArrowRight, LocateFixed, Search, SearchX } from 'lucide-react';
+import { useMemo, useState, type FormEvent } from 'react';
 import { ComoLlegar, Mapa, puntosDesdeTalleres, type Destino } from '@/components/mapa';
 import { DetalleActividad } from '@/components/public/DetalleActividad';
 import { HistoriaCoacalco } from '@/components/public/HistoriaCoacalco';
@@ -16,6 +16,19 @@ import { calcularDistanciaHaversine } from '@/utils/haversine';
 
 type Orden = 'fecha' | 'cercania';
 
+const CORTO: Partial<Record<Categoria, string>> & Record<Exclude<Categoria, 'otro'>, string> = {
+  musica: 'música',
+  danza: 'danza',
+  artes_plasticas: 'arte',
+  teatro: 'teatro',
+  literatura: 'letras',
+  idiomas: 'idiomas',
+  cultura_pop: 'anime',
+  autos: 'autos',
+  juventud: 'juventud',
+  campanas: 'jornadas',
+};
+
 const normalizar = (s: string) =>
   s
     .normalize('NFD')
@@ -30,6 +43,9 @@ export default function CatalogoPage() {
   const [orden, setOrden] = useState<Orden>(ubicacion.estado === 'listo' ? 'cercania' : 'fecha');
   const [abierto, setAbierto] = useState<Taller | null>(null);
   const [destino, setDestino] = useState<Destino | null>(null);
+  // Resultado de la última búsqueda enviada (Enter o botón)
+  const [aviso, setAviso] = useState<{ texto: string; hay: boolean } | null>(null);
+  const [enfoque, setEnfoque] = useState<{ id: string; clave: number } | null>(null);
 
   const coords = ubicacion.estado === 'listo' ? ubicacion.coords : null;
 
@@ -61,9 +77,38 @@ export default function CatalogoPage() {
 
   const puntos = useMemo(() => puntosDesdeTalleres(resultados), [resultados]);
 
+  /** Al buscar: si hay actividades, baja al mapa y marca dónde es; si no, lo dice ahí mismo. */
+  const buscar = (e: FormEvent) => {
+    e.preventDefault();
+    const q = busqueda.trim();
+    if (!q || !talleres) {
+      setAviso(null);
+      return;
+    }
+    const n = resultados.length;
+    const primero = resultados[0];
+    if (!primero) {
+      setAviso({ hay: false, texto: `Por ahora no hay talleres ni eventos disponibles de «${q}». Prueba con otra palabra.` });
+      return;
+    }
+    const lugares = new Set(resultados.map((r) => r.taller.recintoId)).size;
+    setAviso({
+      hay: true,
+      texto: `${n === 1 ? 'Hay 1 actividad' : `Hay ${n} actividades`} de «${q}» en ${lugares === 1 ? '1 lugar' : `${lugares} lugares`}. Te mostramos dónde.`,
+    });
+    setEnfoque({ id: primero.taller.recintoId, clave: Date.now() });
+    const quieto = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    requestAnimationFrame(() => {
+      const destino = document.getElementById('mapa-titulo');
+      destino?.scrollIntoView({ behavior: quieto ? 'auto' : 'smooth', block: 'start' });
+      destino?.focus({ preventScroll: true });
+    });
+  };
+
+  // Palabras cortas: caben en una línea en celular y la portada no cambia de alto al rotar
   const disciplinas = useMemo(() => {
-    const presentes = (Object.keys(CATEGORIAS) as Categoria[]).filter((c) => c !== 'otro' && talleres?.some((t) => t.categoria === c));
-    return (presentes.length ? presentes : (['musica', 'danza', 'teatro', 'idiomas'] as Categoria[])).map((c) => CATEGORIAS[c].toLowerCase());
+    const presentes = (Object.keys(CORTO) as Categoria[]).filter((c) => talleres?.some((t) => t.categoria === c));
+    return [...new Set((presentes.length ? presentes : (['musica', 'danza', 'teatro', 'idiomas'] as Categoria[])).map((c) => CORTO[c] ?? ""))].filter(Boolean);
   }, [talleres]);
 
   return (
@@ -77,7 +122,7 @@ export default function CatalogoPage() {
           <div className="flex max-w-[36rem] flex-col gap-2">
             <h1 id="titulo-catalogo" className="titulo-claro text-(length:--fs-portada) leading-[1.05] font-extrabold">
               Talleres y eventos{' '}
-              <span className="mt-1 flex flex-wrap items-baseline gap-x-[0.3em]">
+              <span className="mt-1 flex flex-nowrap items-baseline gap-x-[0.3em] whitespace-nowrap">
                 de
                 <TextoRotativo textos={disciplinas} />
               </span>
@@ -85,7 +130,8 @@ export default function CatalogoPage() {
             <p className="text-lg text-blanco/85">Actividades culturales gratuitas en Coacalco. Inscríbete sin crear cuenta.</p>
           </div>
 
-          <search className="max-w-[40rem]">
+          <search className="flex max-w-[40rem] flex-col gap-2">
+            <form onSubmit={buscar}>
             <Vidrio fuerza={18} bisel={14} className="relative rounded-full" style={{ ['--vidrio-tinte' as string]: 'var(--c-noche)' }}>
               <label htmlFor="busqueda" className="solo-lectores">
                 Buscar actividad
@@ -95,11 +141,31 @@ export default function CatalogoPage() {
                 id="busqueda"
                 type="search"
                 value={busqueda}
-                onChange={(e) => setBusqueda(e.target.value)}
+                onChange={(e) => {
+                  setBusqueda(e.target.value);
+                  setAviso(null);
+                }}
+                enterKeyHint="search"
                 placeholder="Busca: anime, inglés, autos, teatro…"
-                className="min-h-[calc(var(--toque-min)*1.15)] w-full rounded-full bg-transparent pr-4 pl-12 text-base text-blanco placeholder:text-blanco/75 focus:outline-none focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-amarillo"
+                className="min-h-[calc(var(--toque-min)*1.15)] w-full rounded-full bg-transparent pr-14 pl-12 text-base text-blanco placeholder:text-blanco/75 focus:outline-none focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-amarillo"
               />
+              <button
+                type="submit"
+                aria-label="Buscar"
+                className="absolute top-1/2 right-1.5 grid size-10 -translate-y-1/2 place-items-center rounded-full bg-amarillo text-anil transition-transform duration-(--dur-micro) active:scale-90"
+              >
+                <ArrowRight aria-hidden className="size-5" />
+              </button>
             </Vidrio>
+            </form>
+            <p role="status" aria-live="polite" className="min-h-[1.5em] px-2 text-sm font-semibold">
+              {aviso && (
+                <span className={`inline-flex items-start gap-1.5 ${aviso.hay ? 'text-amarillo' : 'text-blanco'}`}>
+                  {!aviso.hay && <SearchX aria-hidden className="mt-0.5 size-4 shrink-0" />}
+                  {aviso.texto}
+                </span>
+              )}
+            </p>
           </search>
         </div>
         <div className="banda-greca" aria-hidden />
@@ -149,6 +215,7 @@ export default function CatalogoPage() {
             alComoLlegar={setDestino}
             alPedirUbicacion={ordenarPorCercania}
             buscando={ubicacion.estado === 'buscando'}
+            enfoque={enfoque}
           />
           <p className="text-sm text-tenue" aria-live="polite">
             {resultados.length} {resultados.length === 1 ? 'actividad' : 'actividades'}

@@ -1,34 +1,23 @@
-import { ArrowLeft, CalendarDays, Clock, MapPin, User, Users, Wallet } from 'lucide-react';
-import { Link, useParams } from 'react-router-dom';
-import { Barra, Cargando, Insignia, Vacio } from '@/components/ui/Basicos';
-import { EnlaceBoton } from '@/components/ui/Boton';
-import { BotonLeer } from '@/components/public/BotonLeer';
-import { PortadaActividad } from '@/components/public/IconoCategoria';
+import { CalendarDays } from 'lucide-react';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { DetalleActividad } from '@/components/public/DetalleActividad';
+import { Vacio } from '@/components/ui/Basicos';
 import { useSuscripcion } from '@/hooks/useSuscripcion';
-import { cuposDisponibles, estaVigente, suscribirTaller } from '@/services/talleres.service';
-import { CATEGORIAS, type Taller } from '@/types/models';
-import { formatearCosto, formatearFechaLarga, formatearRangoFechas } from '@/utils/formatters';
-import { describirRangoTaller } from '@/utils/rangosEdad';
+import { estaVigente, suscribirTaller } from '@/services/talleres.service';
+import type { Taller } from '@/types/models';
+import CatalogoPage from './CatalogoPage';
 
-function textoParaLeer(t: Taller) {
-  const libres = cuposDisponibles(t);
-  return [
-    `${t.tipo === 'taller' ? 'Taller' : 'Evento'}: ${t.titulo}.`,
-    t.descripcion,
-    `Lugar: ${t.recintoNombre}.`,
-    `Inicia el ${formatearFechaLarga(t.fechaInicio)}. Horario: ${t.horario.replace('·', ',')}.`,
-    `${describirRangoTaller(t.edadMin, t.edadMax)}. Costo: ${formatearCosto(t.costo)}.`,
-    t.instructor ? `Imparte: ${t.instructor}.` : '',
-    libres > 0 ? `Quedan ${libres} lugares.` : 'El cupo está lleno.',
-  ].join(' ');
-}
-
+/**
+ * /taller/:id abre la ficha nueva (la misma del catálogo) encima del inicio,
+ * así los enlaces directos y el "Volver" de la inscripción muestran el mismo diseño.
+ */
 export default function TallerDetallePage() {
   const { id = '' } = useParams();
+  const navegar = useNavigate();
+  const { state } = useLocation() as { state: { desde?: string } | null };
   const taller = useSuscripcion<Taller | null>((cb) => suscribirTaller(id, cb), [id]);
 
-  if (taller === undefined) return <Cargando />;
-  if (!taller || !estaVigente(taller)) {
+  if (taller === null || (taller && !estaVigente(taller))) {
     return (
       <Vacio icono={CalendarDays} titulo="Esta actividad ya no está disponible">
         <Link to="/" className="font-semibold text-marca underline">
@@ -38,77 +27,13 @@ export default function TallerDetallePage() {
     );
   }
 
-  const libres = cuposDisponibles(taller);
-  const mapa = `https://www.openstreetmap.org/?mlat=${taller.recintoUbicacion.lat}&mlon=${taller.recintoUbicacion.lng}#map=17/${taller.recintoUbicacion.lat}/${taller.recintoUbicacion.lng}`;
-
-  const datos = [
-    { icono: CalendarDays, etiqueta: 'Fechas', valor: formatearRangoFechas(taller.fechaInicio, taller.fechaFin) },
-    { icono: Clock, etiqueta: 'Horario', valor: taller.horario },
-    { icono: Users, etiqueta: 'Edad', valor: describirRangoTaller(taller.edadMin, taller.edadMax) },
-    { icono: Wallet, etiqueta: 'Costo', valor: formatearCosto(taller.costo) },
-    ...(taller.instructor ? [{ icono: User, etiqueta: 'Imparte', valor: taller.instructor }] : []),
-  ];
+  // Cerrar vuelve a donde se abrió (p. ej. Recintos); por defecto, al inicio
+  const cerrar = () => navegar(state?.desde ?? '/', { replace: true });
 
   return (
-    <article className="flex flex-col gap-5">
-      <Link to="/" className="toque inline-flex w-fit items-center gap-2 font-semibold text-marca">
-        <ArrowLeft aria-hidden className="size-5" /> Volver
-      </Link>
-
-      <div className="tarjeta overflow-hidden">
-        <PortadaActividad categoria={taller.categoria} imagenUrl={taller.imagenUrl} className="aspect-[16/8] max-h-[45vh]" />
-        <div className="banda-rebozo" aria-hidden />
-        <div className="flex flex-col gap-4 p-5 sm:p-7">
-          <div className="flex flex-wrap gap-1.5">
-            <Insignia tono="marca">{taller.tipo === 'taller' ? 'Taller' : 'Evento'}</Insignia>
-            <Insignia>{CATEGORIAS[taller.categoria]}</Insignia>
-          </div>
-          <h1 className="text-3xl leading-tight font-bold">{taller.titulo}</h1>
-          <BotonLeer texto={textoParaLeer(taller)} etiqueta="Escuchar información" />
-          <p className="leading-relaxed">{taller.descripcion}</p>
-
-          <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {datos.map(({ icono: Icono, etiqueta, valor }) => (
-              <div key={etiqueta} className="flex items-start gap-3 rounded-lg bg-hundido p-3">
-                <Icono aria-hidden className="mt-0.5 size-5 shrink-0 text-marca" />
-                <div>
-                  <dt className="text-sm text-tenue">{etiqueta}</dt>
-                  <dd className="font-semibold">{valor}</dd>
-                </div>
-              </div>
-            ))}
-          </dl>
-
-          <div className="flex items-start gap-3 rounded-lg border border-linea p-3">
-            <MapPin aria-hidden className="mt-0.5 size-5 shrink-0 text-marca" />
-            <div className="flex-1">
-              <p className="font-semibold">{taller.recintoNombre}</p>
-              <a href={mapa} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-marca underline">
-                Ver en el mapa<span className="solo-lectores"> (se abre en otra pestaña)</span>
-              </a>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <p className="font-semibold">{libres > 0 ? `${libres} de ${taller.cupoMaximo} lugares disponibles` : 'Cupo lleno'}</p>
-            <Barra valor={taller.inscritos} maximo={taller.cupoMaximo} etiqueta="Ocupación" />
-          </div>
-        </div>
-      </div>
-
-      {/* Botón principal fijo sobre la barra inferior: siempre al alcance del pulgar */}
-      <div
-        className="sticky z-20 -mx-1"
-        style={{ bottom: 'calc(var(--alto-barra) + 0.75rem)' }}
-      >
-        {libres > 0 ? (
-          <EnlaceBoton to={`/taller/${taller.id}/inscripcion`} variante="acento" tamano="lg" className="w-full shadow-lg">
-            Inscribirme
-          </EnlaceBoton>
-        ) : (
-          <p className="rounded-lg bg-error-fondo p-3 text-center font-semibold text-error">Ya no hay lugares disponibles</p>
-        )}
-      </div>
-    </article>
+    <>
+      <CatalogoPage />
+      {taller && <DetalleActividad taller={taller} alCerrar={cerrar} />}
+    </>
   );
 }

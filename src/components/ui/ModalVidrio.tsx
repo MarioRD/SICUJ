@@ -1,5 +1,6 @@
 import { X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { Vidrio } from '@/components/ui/Vidrio';
 
 /**
  * Vista enfocada: el fondo se desenfoca y el contenido aparece al centro en grande.
@@ -44,14 +45,17 @@ export function ModalVidrio({
     >
       <div className="grid min-h-full place-items-center p-3 sm:p-6" onClick={(e) => e.target === e.currentTarget && salir()}>
         <div className="relative w-full" style={{ maxWidth: ancho }}>
-          <button
+          <Vidrio
+            as="button"
             type="button"
+            fuerza={12}
+            bisel={12}
             onClick={salir}
-            className="vidrio absolute -top-2 -right-2 z-10 grid size-12 place-items-center rounded-full text-tinta transition-transform duration-(--dur-micro) active:scale-90 sm:-top-4 sm:-right-4"
+            className="absolute! -top-2 -right-2 z-10 grid size-12 place-items-center rounded-full text-tinta transition-transform duration-(--dur-micro) active:scale-90 sm:-top-4 sm:-right-4"
             aria-label="Cerrar"
           >
             <X aria-hidden className="size-5" />
-          </button>
+          </Vidrio>
           {children}
         </div>
       </div>

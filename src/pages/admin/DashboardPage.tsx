@@ -1,10 +1,13 @@
-import { CalendarCheck, DoorOpen, Radio, RotateCcw, Ticket, UsersRound } from 'lucide-react';
+import { CalendarCheck, DatabaseZap, DoorOpen, Radio, RotateCcw, Ticket, UsersRound } from 'lucide-react';
+import { useState } from 'react';
 import { Barra, Cargando, Insignia } from '@/components/ui/Basicos';
 import { Boton } from '@/components/ui/Boton';
 import { TarjetaMetrica } from '@/components/admin/TarjetaMetrica';
 import { useAvisos } from '@/context/AvisosContext';
 import { useSuscripcion } from '@/hooks/useSuscripcion';
 import { EncabezadoPagina } from '@/layouts/AdminLayout';
+import { usarFirebase } from '@/services/config';
+import { cargarDatosEjemplo } from '@/services/firebase/semilla';
 import { restablecerDatosDemo } from '@/services/local/seed';
 import { almacen } from '@/services/local/store';
 import { suscribirMetricas } from '@/services/metricas.service';
@@ -14,8 +17,24 @@ import { formatearFecha, porcentaje } from '@/utils/formatters';
 export default function DashboardPage() {
   const m = useSuscripcion(suscribirMetricas, []);
   const avisar = useAvisos();
+  const [cargando, setCargando] = useState(false);
 
   if (!m) return <Cargando />;
+  const vacia = m.talleres.length === 0 && m.afluenciaPorRecinto.length === 0;
+
+  const cargarEjemplo = async () => {
+    if (!window.confirm('¿Cargar los recintos de Coacalco y las actividades de ejemplo en la base de datos?')) return;
+    setCargando(true);
+    try {
+      await cargarDatosEjemplo();
+      avisar('Datos de ejemplo cargados.', 'exito');
+    } catch (e) {
+      console.error('Cargar datos de ejemplo:', e);
+      avisar('No se pudieron cargar. Revisa que tu cuenta sea administradora y que las reglas estén publicadas.', 'error');
+    } finally {
+      setCargando(false);
+    }
+  };
   const maxAfluencia = Math.max(1, ...m.afluenciaPorRecinto.map((r) => Math.max(r.afluencia, r.inscritos)));
 
   const restablecer = () => {
@@ -34,9 +53,16 @@ export default function DashboardPage() {
             <Insignia tono="ok">
               <Radio aria-hidden className="size-3.5 animate-pulse" /> En vivo
             </Insignia>
-            <Boton variante="fantasma" tamano="sm" icono={<RotateCcw aria-hidden className="size-4" />} onClick={restablecer}>
-              Restablecer demo
-            </Boton>
+            {!usarFirebase && (
+              <Boton variante="fantasma" tamano="sm" icono={<RotateCcw aria-hidden className="size-4" />} onClick={restablecer}>
+                Restablecer demo
+              </Boton>
+            )}
+            {usarFirebase && vacia && (
+              <Boton tamano="sm" cargando={cargando} icono={<DatabaseZap aria-hidden className="size-4" />} onClick={cargarEjemplo}>
+                Cargar datos de ejemplo
+              </Boton>
+            )}
           </>
         }
       />

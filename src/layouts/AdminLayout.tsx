@@ -1,4 +1,4 @@
-import { BarChart3, Building2, ExternalLink, FileSpreadsheet, LayoutDashboard, LogOut, Menu, QrCode, X } from 'lucide-react';
+import { BarChart3, Building2, ExternalLink, FileSpreadsheet, LayoutDashboard, LogOut, Menu, QrCode, UsersRound, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { SaltarAlContenido } from '@/components/ui/Basicos';
@@ -13,6 +13,7 @@ const NAV: Array<{ a: string; etiqueta: string; icono: typeof LayoutDashboard; r
   { a: '/admin/recintos', etiqueta: 'Recintos', icono: Building2, roles: ['admin'] },
   { a: '/admin/validacion', etiqueta: 'Validar pases QR', icono: QrCode, roles: ['admin', 'staff'] },
   { a: '/admin/reportes', etiqueta: 'Reportes', icono: FileSpreadsheet, roles: ['admin'] },
+  { a: '/admin/cuentas', etiqueta: 'Cuentas', icono: UsersRound, roles: ['admin'] },
 ];
 
 /**
@@ -101,6 +102,9 @@ export function AdminLayout() {
               <LogOut aria-hidden className="size-4" /> Cerrar sesión
             </button>
           </div>
+          <span className="bajorrelieve mt-3 ml-auto block w-fit" role="img" aria-label="Firma del autor: 65" title="65">
+            <span className="h-8 w-[2.1rem]" style={{ ['--firma' as string]: 'url(/brand/firma-65.png)' }} />
+          </span>
         </div>
       </aside>
 

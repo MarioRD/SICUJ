@@ -46,6 +46,11 @@ export function AvisoPrivacidadSimplificado() {
         forma opcional, un correo o teléfono de contacto. No pedimos CURP, domicilio, fotografía ni datos sensibles.
       </p>
       <p>
+        <strong>Inscripción rápida (opcional):</strong> si tienes cuenta y lo autorizas, guardamos tu nombre, fecha de
+        nacimiento, género y teléfono para inscribirte con un toque. Solo tú puedes verlos y los cambias o borras cuando
+        quieras en “Mis datos”.
+      </p>
+      <p>
         <strong>¿Para qué?</strong> (1) Registrar tu lugar y generar tu pase digital; (2) controlar el acceso y evitar
         duplicados; (3) avisarte de cambios o cancelaciones, solo si dejaste un contacto; y (4) elaborar estadísticas
         anónimas de participación por edad y género para planear la oferta cultural.
@@ -90,6 +95,13 @@ export function AvisoPrivacidadIntegral() {
             forma cifrada e irreversible).
           </li>
           <li>
+            <strong>Inscripción rápida (opcional, solo con cuenta y con autorización expresa):</strong> nombre, fecha de
+            nacimiento, género y teléfono, para llenar automáticamente futuras inscripciones. Se usa la fecha de nacimiento
+            (no la edad) para calcular la edad al día de cada actividad. Solo la persona titular de la cuenta puede
+            consultarlos; puede modificarlos o eliminarlos en cualquier momento desde la sección “Mis datos”, y se
+            eliminan al cancelar la cuenta.
+          </li>
+          <li>
             <strong>Registro de asistencia:</strong> fecha y hora en que se validó el pase y el personal que lo validó.
           </li>
         </ul>
@@ -97,7 +109,9 @@ export function AvisoPrivacidadIntegral() {
           <strong>No se recaban datos personales sensibles.</strong> La ubicación del dispositivo, cuando se usa la función
           “Cerca de mí”, se procesa únicamente en el propio dispositivo para ordenar los recintos por distancia y{' '}
           <strong>no se envía ni se almacena</strong>. Las imágenes procesadas con la función de lectura de texto (OCR)
-          también se procesan solo en el dispositivo.
+          también se procesan solo en el dispositivo. Al usar el <strong>asistente por voz</strong>, tu voz la convierte en
+          texto el servicio de reconocimiento de tu navegador (en Chrome y Edge lo hace Google o Microsoft; en Safari, Apple);
+          SICUJ solo recibe ese texto para buscar actividades y <strong>no guarda grabaciones ni la conversación</strong>.
         </p>
       </Seccion>
 

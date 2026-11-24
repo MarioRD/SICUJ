@@ -6,6 +6,7 @@ import { Boton } from '@/components/ui/Boton';
 import { Campo } from '@/components/ui/Campo';
 import { useAuth } from '@/context/AuthContext';
 import { cerrarSesion, iniciarSesion } from '@/services/auth.service';
+import { usarFirebase } from '@/services/config';
 import { CUENTAS_DEMO } from '@/services/local/seed';
 
 export default function LoginPage() {
@@ -64,6 +65,7 @@ export default function LoginPage() {
           </Boton>
         </form>
 
+        {!usarFirebase && (
         <Alerta tono="aviso" titulo="Versión de prueba: cuentas demo">
           <ul className="mt-1 flex flex-col gap-1">
             {CUENTAS_DEMO.map((c) => (
@@ -83,6 +85,7 @@ export default function LoginPage() {
           </ul>
           <p className="mt-2 text-xs">Las cuentas reales se crearán en Firebase Authentication.</p>
         </Alerta>
+        )}
 
         <Link to="/" className="text-center text-sm font-semibold text-marca underline">
           Ir al sitio ciudadano

@@ -6,7 +6,11 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc -b"
+    "typecheck": "tsc -b",
+    "test:reglas": "firebase emulators:exec --only firestore --project sicuj-pruebas \"vitest run --config vitest.reglas.config.ts\"",
+    "reglas:publicar": "firebase deploy --only firestore",
+    "test:integracion": "firebase emulators:exec --only auth,firestore --project sicuj-pruebas \"vitest run --config vitest.integracion.config.ts\"",
+    "publicar": "npm run build && firebase deploy --only hosting"
   },
   "type": "module",
   "private": true,
@@ -28,12 +32,14 @@
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
+    "@firebase/rules-unit-testing": "^6.0.0",
     "@tailwindcss/vite": "^4.3.5",
     "@types/leaflet": "^1.9.22",
     "@types/node": "^26.6.6",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.3.0",
+    "firebase-tools": "^15.37.0",
     "tailwindcss": "^4.3.5",
     "typescript": "^7.0.2",
     "vite": "^8.3.8",

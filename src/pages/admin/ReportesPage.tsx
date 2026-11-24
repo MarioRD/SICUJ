@@ -2,7 +2,8 @@ import { FileDown, FileSpreadsheet, RefreshCw } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { Alerta, Cargando } from '@/components/ui/Basicos';
 import { Boton } from '@/components/ui/Boton';
-import { Campo, Selector } from '@/components/ui/Campo';
+import { Selector } from '@/components/ui/Campo';
+import { CampoFecha } from '@/components/ui/CampoFecha';
 import { useAuth } from '@/context/AuthContext';
 import { useAvisos } from '@/context/AvisosContext';
 import { construirDatosReporte, type DatosReporte } from '@/features/reportes/datosReporte';
@@ -111,8 +112,8 @@ export default function ReportesPage() {
           void consultar();
         }}
       >
-        <Campo etiqueta="Registrados desde" type="date" value={desde} onChange={(e) => setDesde(e.target.value)} />
-        <Campo etiqueta="Hasta" type="date" value={hasta} min={desde || undefined} onChange={(e) => setHasta(e.target.value)} />
+        <CampoFecha etiqueta="Registrados desde" value={desde} onChange={setDesde} />
+        <CampoFecha etiqueta="Hasta" value={hasta} min={desde || undefined} onChange={setHasta} />
         <Selector etiqueta="Actividad" value={tallerId} onChange={(e) => setTallerId(e.target.value)}>
           <option value="">Todas las actividades</option>
           {talleres.map((t) => (

@@ -1,5 +1,5 @@
-import { Accessibility, History, Home, LayoutDashboard, LogIn, LogOut, MapPinned, Moon, Sun, Ticket } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { Accessibility, History, Home, LayoutDashboard, LogIn, LogOut, MapPinned, Mic, Moon, ScanText, Sparkles, Sun, Ticket, UserPen, type LucideIcon } from 'lucide-react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, ScrollRestoration, useLocation } from 'react-router-dom';
 import { SaltarAlContenido } from '@/components/ui/Basicos';
 import { LucesCandil } from '@/components/ui/LucesCandil';
@@ -8,20 +8,114 @@ import { useAuth } from '@/context/AuthContext';
 import { usePreferencias } from '@/context/PreferenciasContext';
 import { cerrarSesion } from '@/services/auth.service';
 
+const LectorCarteles = lazy(() => import('@/components/public/LectorCarteles'));
+const AsistenteVoz = lazy(() => import('@/components/public/AsistenteVoz'));
+
+/**
+ * Botón flotante (como el de chat): se despliega con las ayudas que sirven en cualquier
+ * pantalla, el asistente por voz y el lector de carteles. Popover nativo: Esc y tocar
+ * fuera lo cierran, y el foco vuelve al botón.
+ */
+function AyudasFlotantes() {
+  const [abierta, setAbierta] = useState<'asistente' | 'lector' | null>(null);
+  const [desplegado, setDesplegado] = useState(false);
+  const menu = useRef<HTMLDivElement>(null);
+  const elegir = (q: 'asistente' | 'lector') => {
+    menu.current?.hidePopover();
+    setAbierta(q);
+  };
+  const cerrar = () => setAbierta(null);
+  return (
+    <>
+      <button
+        type="button"
+        popoverTarget="ayudas-flotantes"
+        aria-expanded={desplegado}
+        title="Asistente por voz y lector de carteles"
+        className="fixed right-4 z-30 flex items-center gap-2 rounded-full bg-acento p-3.5 text-acento-tinta shadow-[0_12px_28px_-8px_rgb(11_16_38/0.55)] ring-4 ring-superficie/70 transition-[background-color,transform,scale] duration-(--dur-corta) ease-(--curva-liquida) hover:scale-105 hover:bg-acento-hover active:scale-90 lg:right-6 lg:px-5"
+        style={{ bottom: 'calc(var(--alto-barra) + 1rem)' }}
+      >
+        <Sparkles aria-hidden className={`size-7 transition-[rotate] duration-(--dur-corta) ease-(--curva-liquida) lg:size-6 ${desplegado ? 'rotate-45' : ''}`} />
+        <span className="sr-only font-bold lg:not-sr-only">Ayuda por voz</span>
+      </button>
+      <div
+        id="ayudas-flotantes"
+        ref={menu}
+        popover="auto"
+        className="ayudas-flotantes"
+        onToggle={(e) => setDesplegado((e.nativeEvent as ToggleEvent).newState === 'open')}
+      >
+        <ul className="flex flex-col items-end gap-2.5">
+          {(
+            [
+              { q: 'asistente', texto: 'Asistente por voz', ayuda: 'Te digo qué hay y te inscribo', icono: Mic, color: 'bg-marca text-marca-tinta' },
+              { q: 'lector', texto: 'Leer un cartel', ayuda: 'Foto → te lo leo en voz alta', icono: ScanText, color: 'bg-acento text-acento-tinta' },
+            ] as const
+          ).map(({ q, texto, ayuda, icono: Icono, color }) => (
+            <li key={q}>
+              <button
+                type="button"
+                onClick={() => elegir(q)}
+                className="flex items-center gap-3 rounded-full bg-superficie py-1.5 pr-1.5 pl-5 text-left shadow-[0_12px_28px_-10px_rgb(11_16_38/0.5)] transition-transform duration-(--dur-micro) hover:-translate-x-1 active:scale-95"
+              >
+                <span className="flex flex-col leading-tight">
+                  <span className="font-bold">{texto}</span>
+                  <span className="text-xs text-tenue">{ayuda}</span>
+                </span>
+                <span className={`grid size-12 shrink-0 place-items-center rounded-full ${color}`}>
+                  <Icono aria-hidden className="size-6" />
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+      {abierta && (
+        <Suspense fallback={null}>
+          {abierta === 'asistente' ? <AsistenteVoz alCerrar={cerrar} /> : <LectorCarteles alCerrar={cerrar} />}
+        </Suspense>
+      )}
+    </>
+  );
+}
+
+/**
+ * Ícono de navegación: de contorno en reposo; activo, relleno sólido del azul de la marca
+ * sin contorno aparte. Los detalles interiores (puerta, manecillas, hueco del pin) se
+ * "calan" con el color del fondo encima de la silueta, como en los íconos rellenos.
+ */
+function IconoNav({ icono: Icono, activo, className }: { icono: LucideIcon; activo: boolean; className: string }) {
+  const clases = `${className} transition-[scale] duration-(--dur-corta) ease-(--curva-liquida)`;
+  if (!activo) return <Icono aria-hidden className={clases} strokeWidth={1.9} />;
+  return (
+    <span aria-hidden className={`relative inline-grid scale-110 text-marca ${clases}`}>
+      <Icono className="col-start-1 row-start-1 size-full" fill="currentColor" strokeWidth={2.6} />
+      <Icono className="col-start-1 row-start-1 size-full text-superficie" fill="none" strokeWidth={1.2} />
+    </span>
+  );
+}
+
 /** Interruptor de modo oscuro (luces de candil). */
-function BotonTema({ className = '' }: { className?: string }) {
+function BotonTema({ className = '', flotante = false }: { className?: string; flotante?: boolean }) {
   const { preferencias, cambiar } = usePreferencias();
   const oscuro = preferencias.modoOscuro;
-  return (
-    <button
-      type="button"
-      onClick={() => cambiar({ modoOscuro: !oscuro })}
-      aria-pressed={oscuro}
-      aria-label="Modo oscuro"
-      title={oscuro ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-      className={`vidrio grid size-11 shrink-0 place-items-center rounded-full text-marca transition-transform duration-(--dur-corta) ease-(--curva-liquida) hover:-rotate-12 active:scale-90 ${className}`}
-    >
-      {oscuro ? <Sun aria-hidden className="size-5" /> : <Moon aria-hidden className="size-5" />}
+  const props = {
+    onClick: () => cambiar({ modoOscuro: !oscuro }),
+    'aria-pressed': oscuro,
+    'aria-label': 'Modo oscuro',
+    title: oscuro ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro',
+    className: `grid size-11 shrink-0 place-items-center rounded-full text-marca transition-[transform,background-color] duration-(--dur-corta) ease-(--curva-liquida) hover:-rotate-12 active:scale-90 ${
+      flotante ? 'shadow-lg' : 'hover:bg-marca/8'
+    } ${className}`,
+  };
+  const icono = oscuro ? <Sun aria-hidden className="size-5" /> : <Moon aria-hidden className="size-5" />;
+  return flotante ? (
+    <Vidrio as="button" type="button" fuerza={14} bisel={12} {...props}>
+      {icono}
+    </Vidrio>
+  ) : (
+    <button type="button" {...props}>
+      {icono}
     </button>
   );
 }
@@ -49,7 +143,7 @@ function MenuSesion() {
     return (
       <Link
         to="/cuenta"
-        className="vidrio brillo inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full px-4 text-sm font-semibold text-marca transition-transform duration-(--dur-micro) active:scale-95"
+        className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full bg-marca/10 px-4 text-sm font-semibold text-marca transition-[transform,background-color] duration-(--dur-micro) hover:bg-marca/16 active:scale-95"
       >
         <LogIn aria-hidden className="size-4" /> Entrar
       </Link>
@@ -67,7 +161,7 @@ function MenuSesion() {
         onClick={() => setAbierto((a) => !a)}
         aria-expanded={abierto}
         aria-haspopup="menu"
-        className="vidrio flex min-h-11 items-center gap-2 rounded-full py-1 pr-4 pl-1 text-sm font-semibold transition-transform duration-(--dur-micro) active:scale-95"
+        className="flex min-h-11 items-center gap-2 rounded-full py-1 pr-4 pl-1 text-sm font-semibold transition-[transform,background-color] duration-(--dur-micro) hover:bg-marca/8 active:scale-95"
       >
         <span className="grid size-9 place-items-center rounded-full bg-marca font-bold text-marca-tinta">{iniciales}</span>
         <span className="max-w-[8rem] truncate max-sm:hidden">{usuario.nombre.split(' ')[0]}</span>
@@ -83,6 +177,9 @@ function MenuSesion() {
             <strong className="block truncate">{usuario.nombre}</strong>
             <span className="block truncate text-tenue">{usuario.email}</span>
           </p>
+          <Link role="menuitem" to="/mis-datos" className="flex min-h-11 items-center gap-2 rounded-xl px-3 font-semibold hover:bg-marca/8">
+            <UserPen aria-hidden className="size-4.5" /> Mis datos
+          </Link>
           {usuario.rol !== 'ciudadano' && (
             <Link role="menuitem" to="/admin" className="flex min-h-11 items-center gap-2 rounded-xl px-3 font-semibold hover:bg-marca/8">
               <LayoutDashboard aria-hidden className="size-4.5" /> Panel administrativo
@@ -112,8 +209,8 @@ export function PublicLayout() {
   const { preferencias } = usePreferencias();
   const conSesion = !!usuario;
   const { pathname } = useLocation();
-  // Pantallas de herramienta (pases y accesibilidad) van sin pie de página
-  const sinPie = pathname.startsWith('/mis-pases') || pathname.startsWith('/accesibilidad');
+  // Pantallas de herramienta (pases, historial y accesibilidad) van sin pie de página
+  const sinPie = ['/mis-pases', '/pase/', '/accesibilidad', '/historial', '/mis-datos'].some((r) => pathname.startsWith(r));
   const nav = [
     { a: '/', etiqueta: 'Inicio', icono: Home, fin: true },
     { a: '/recintos', etiqueta: 'Recintos', icono: MapPinned, fin: false },
@@ -126,9 +223,10 @@ export function PublicLayout() {
     <div className="flex min-h-dvh flex-col text-base">
       {preferencias.modoOscuro && <LucesCandil />}
       <SaltarAlContenido />
-      <header className="encabezado-fijo vidrio sticky top-0 z-30" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+      <header className="encabezado-fijo pointer-events-none sticky top-0 z-30" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="banda-rebozo" aria-hidden />
-        <div className="contenedor flex items-center justify-between gap-3 py-2.5">
+        <div className="contenedor pt-2.5">
+        <Vidrio fuerza={26} bisel={22} className="pointer-events-auto flex items-center justify-between gap-3 rounded-full py-1.5 pr-1.5 pl-4 shadow-lg">
           <Link to="/" className="flex min-w-0 items-center gap-3 rounded-md">
             <img
               src="/brand/imjuvec-96.webp"
@@ -152,13 +250,17 @@ export function PublicLayout() {
                     to={a}
                     end={fin}
                     className={({ isActive }) =>
-                      `flex min-h-(--toque-min) items-center gap-2 rounded-full px-4 text-sm font-semibold transition-[background-color,color,transform] duration-(--dur-corta) ease-(--curva-liquida) active:scale-95 ${
-                        isActive ? 'bg-marca text-marca-tinta' : 'text-tinta hover:bg-marca/8'
+                      `flex min-h-(--toque-min) items-center gap-2 rounded-full px-4 text-sm font-semibold whitespace-nowrap transition-[background-color,color,transform] duration-(--dur-corta) ease-(--curva-liquida) active:scale-95 ${
+                        isActive ? 'font-bold text-marca' : 'text-tinta hover:bg-marca/8'
                       }`
                     }
                   >
-                    <Icono aria-hidden className="size-4.5" />
-                    {etiqueta}
+                    {({ isActive }) => (
+                      <>
+                        <IconoNav icono={Icono} activo={isActive} className="size-5" />
+                        {etiqueta}
+                      </>
+                    )}
                   </NavLink>
                 </li>
               ))}
@@ -169,6 +271,7 @@ export function PublicLayout() {
             <BotonTema className="lg:hidden" />
             <MenuSesion />
           </div>
+        </Vidrio>
         </div>
       </header>
 
@@ -204,7 +307,8 @@ export function PublicLayout() {
       )}
 
       {/* Escritorio: interruptor de tema flotante abajo a la izquierda */}
-      <BotonTema className="fixed bottom-5 left-5 z-30 hidden lg:grid" />
+      <BotonTema flotante className="fixed! bottom-5 left-5 z-30 hidden lg:grid" />
+      {!pathname.startsWith('/accesibilidad') && <AyudasFlotantes />}
 
       <nav
         aria-label="Navegación principal"
@@ -220,13 +324,13 @@ export function PublicLayout() {
                   end={fin}
                   className={({ isActive }) =>
                     `flex min-h-[calc(var(--toque-min)*1.3)] flex-col items-center justify-center gap-0.5 rounded-full text-xs transition-[background-color,color,transform] duration-(--dur-corta) ease-(--curva-liquida) active:scale-90 ${
-                      isActive ? 'bg-marca font-bold text-marca-tinta shadow-sm' : 'font-semibold text-tinta/75'
+                      isActive ? 'font-bold text-marca' : 'font-semibold text-tinta/75'
                     }`
                   }
                 >
                   {({ isActive }) => (
                     <>
-                      <Icono aria-hidden className="size-[clamp(1.25rem,5.2vmin,1.5rem)]" strokeWidth={isActive ? 2.4 : 1.9} />
+                      <IconoNav icono={Icono} activo={isActive} className="size-[clamp(1.35rem,5.6vmin,1.6rem)]" />
                       {etiqueta}
                     </>
                   )}

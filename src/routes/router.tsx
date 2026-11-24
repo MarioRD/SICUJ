@@ -36,6 +36,7 @@ export const router = createBrowserRouter([
       { path: 'accesibilidad', element: diferida(() => import('@/pages/public/AccesibilidadPage')) },
       { path: 'cuenta', element: diferida(() => import('@/pages/public/CuentaPage')) },
       { path: 'historial', element: diferida(() => import('@/pages/public/HistorialPage')) },
+      { path: 'mis-datos', element: diferida(() => import('@/pages/public/MisDatosPage')) },
       { path: 'aviso-privacidad', element: diferida(() => import('@/pages/public/AvisoPrivacidadPage')) },
     ],
   },
@@ -66,6 +67,10 @@ export const router = createBrowserRouter([
       {
         path: 'reportes',
         element: <ProtectedRoute roles={['admin']}>{diferida(() => import('@/pages/admin/ReportesPage'))}</ProtectedRoute>,
+      },
+      {
+        path: 'cuentas',
+        element: <ProtectedRoute roles={['admin']}>{diferida(() => import('@/pages/admin/CuentasAdminPage'))}</ProtectedRoute>,
       },
     ],
   },

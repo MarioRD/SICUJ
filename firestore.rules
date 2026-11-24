@@ -1,0 +1,225 @@
+rules_version = '2';
+
+// Reglas de seguridad de SICUJ.
+// La app no tiene servidor propio: estas reglas son las que garantizan que nadie
+// rebase el cupo, se dé permisos de administración o modifique pases ajenos.
+//
+// Roles (campo `rol` en usuarios/{uid}): admin, staff, ciudadano.
+// Las personas sin cuenta pueden inscribirse: el ID de la inscripción (20 caracteres
+// aleatorios, ≈119 bits) es su pase y funciona como llave, como un boleto impreso.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- Utilidades ----------
+    function ruta(col, id) { return /databases/$(database)/documents/$(col)/$(id); }
+    // "Esta cuenta ya tiene pase para esta actividad": un pase por cuenta por actividad.
+    function marca(tallerId, uid) { return /databases/$(database)/documents/talleres/$(tallerId)/cuentas/$(uid); }
+    function autenticado() { return request.auth != null; }
+    function perfil() { return get(ruta('usuarios', request.auth.uid)).data; }
+    function tieneRol(roles) {
+      return autenticado()
+        && exists(ruta('usuarios', request.auth.uid))
+        && perfil().activo == true
+        && perfil().rol in roles;
+    }
+    function esAdmin() { return tieneRol(['admin']); }
+    function esPersonal() { return tieneRol(['admin', 'staff']); }
+    function soloCambia(campos) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(campos);
+    }
+    function ahora() { return request.time.toMillis(); }
+    function texto(v, min, max) { return v is string && v.size() >= min && v.size() <= max; }
+
+    // ---------- Usuarios ----------
+    match /usuarios/{uid} {
+      allow get: if (autenticado() && request.auth.uid == uid) || esAdmin();
+      allow list: if esAdmin();
+
+      // Al registrarse: siempre como ciudadano. Nadie puede darse otro rol.
+      allow create: if autenticado() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['nombre', 'email', 'rol', 'activo', 'creadoEn'])
+        && request.resource.data.rol == 'ciudadano'
+        && request.resource.data.activo == true
+        && texto(request.resource.data.nombre, 2, 60)
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.creadoEn is int
+      // Administración da de alta cuentas del personal (admin o staff).
+      || esAdmin()
+        && request.resource.data.keys().hasOnly(['nombre', 'email', 'rol', 'activo', 'creadoEn'])
+        && request.resource.data.rol in ['admin', 'staff', 'ciudadano']
+        && request.resource.data.activo is bool
+        && texto(request.resource.data.nombre, 2, 60)
+        && request.resource.data.email is string;
+
+      // La persona solo puede cambiar su nombre; roles y bajas, solo administración.
+      allow update: if esAdmin()
+        || (autenticado() && request.auth.uid == uid
+            && soloCambia(['nombre'])
+            && texto(request.resource.data.nombre, 2, 60));
+      // Cada persona puede eliminar su cuenta; administración, la de cualquiera.
+      allow delete: if esAdmin() || (autenticado() && request.auth.uid == uid);
+    }
+
+    // ---------- Recintos ----------
+    match /recintos/{id} {
+      allow read: if resource.data.activo == true || esPersonal();
+      allow create: if esAdmin();
+      allow update: if esAdmin()
+        // Personal de acceso: solo suma afluencia al validar un pase.
+        || (esPersonal()
+            && soloCambia(['afluenciaTotal'])
+            && request.resource.data.afluenciaTotal > resource.data.afluenciaTotal);
+      allow delete: if false; // baja lógica (activo: false)
+    }
+
+    // ---------- Talleres y eventos ----------
+    function inscripcionNueva(tallerId) {
+      let insId = request.resource.data.ultimaInscripcion;
+      let despues = getAfter(ruta('inscripciones', insId)).data;
+      return soloCambia(['inscritos', 'ultimaInscripcion'])
+        && insId is string
+        && !exists(ruta('inscripciones', insId))
+        && existsAfter(ruta('inscripciones', insId))
+        && despues.tallerId == tallerId
+        && request.resource.data.inscritos == resource.data.inscritos + despues.personas
+        && request.resource.data.inscritos <= resource.data.cupoMaximo
+        && resource.data.activo == true
+        && resource.data.fechaFin >= ahora();
+    }
+    function cancelacion(tallerId) {
+      let insId = request.resource.data.ultimaCancelacion;
+      let antes = get(ruta('inscripciones', insId)).data;
+      return soloCambia(['inscritos', 'ultimaCancelacion'])
+        && insId is string
+        && exists(ruta('inscripciones', insId))
+        && !existsAfter(ruta('inscripciones', insId))
+        && antes.tallerId == tallerId
+        && antes.usado == false
+        && request.resource.data.inscritos == resource.data.inscritos - antes.personas;
+    }
+
+    match /talleres/{id} {
+      allow read: if resource.data.activo == true || esPersonal();
+      allow create: if esAdmin()
+        && request.resource.data.inscritos == 0
+        && request.resource.data.asistentes == 0;
+      // Primero los casos de inscripción: así no se gasta una lectura del perfil en cada pase.
+      allow update: if inscripcionNueva(id)
+        || cancelacion(id)
+        || esAdmin()
+        // Personal de acceso: solo suma asistentes al validar un pase.
+        || (esPersonal()
+            && soloCambia(['asistentes'])
+            && request.resource.data.asistentes > resource.data.asistentes);
+      allow delete: if false; // baja lógica (activo: false)
+    }
+
+    // ---------- Inscripciones (pases) ----------
+    function personaValida(p) {
+      return p.keys().hasOnly(['nombre', 'edad', 'rangoEdad', 'genero'])
+        && texto(p.nombre, 2, 60)
+        && p.edad is int && p.edad >= 0 && p.edad <= 120
+        && p.genero in ['femenino', 'masculino', 'no_binario', 'prefiero_no_decir'];
+    }
+    function inscripcionValida(id) {
+      let d = request.resource.data;
+      let taller = get(ruta('talleres', d.tallerId)).data;
+      return d.keys().hasOnly([
+          'folio', 'tallerId', 'tallerTitulo', 'tallerFechaInicio', 'tallerHorario', 'recintoId',
+          'recintoNombre', 'uidCiudadano', 'titular', 'acompanantes', 'personas', 'contacto',
+          'aceptoAvisoPrivacidad', 'consentimientoTutor', 'usado', 'usadoEn', 'validadoPor', 'creadoEn'])
+        && d.usado == false && d.usadoEn == null && d.validadoPor == null
+        && d.aceptoAvisoPrivacidad == true
+        && d.consentimientoTutor is bool
+        && d.contacto.keys().hasOnly(['email', 'telefono'])
+        && texto(d.folio, 9, 9)
+        && personaValida(d.titular)
+        && d.acompanantes is list && d.acompanantes.size() <= 4
+        && d.personas == d.acompanantes.size() + 1
+        && (d.uidCiudadano == null
+            || (autenticado() && d.uidCiudadano == request.auth.uid
+                && !exists(marca(d.tallerId, d.uidCiudadano))
+                && getAfter(marca(d.tallerId, d.uidCiudadano)).data.inscripcionId == id))
+        && d.creadoEn is int && math.abs(d.creadoEn - ahora()) < 10 * 60 * 1000
+        // Las copias del taller deben coincidir con el taller real.
+        && d.tallerTitulo == taller.titulo
+        && d.recintoId == taller.recintoId
+        && d.tallerFechaInicio == taller.fechaInicio
+        // El contador del taller sube en la misma transacción.
+        && getAfter(ruta('talleres', d.tallerId)).data.ultimaInscripcion == id;
+    }
+
+    match /inscripciones/{id} {
+      // Con el ID (el QR) se puede ver el pase; listar, solo el personal o la dueña de la cuenta.
+      allow get: if true;
+      allow list: if esPersonal()
+        || (autenticado() && resource.data.uidCiudadano == request.auth.uid);
+
+      allow create: if inscripcionValida(id);
+
+      allow update: if
+        // Validación en puerta: una sola vez, por el personal de acceso.
+        (esPersonal()
+          && soloCambia(['usado', 'usadoEn', 'validadoPor'])
+          && resource.data.usado == false
+          && request.resource.data.usado == true
+          && request.resource.data.validadoPor == request.auth.uid)
+        // Vincular a la cuenta un pase hecho sin sesión en este dispositivo.
+        || (autenticado()
+          && soloCambia(['uidCiudadano'])
+          && resource.data.uidCiudadano == null
+          && request.resource.data.uidCiudadano == request.auth.uid
+          && !exists(marca(resource.data.tallerId, request.auth.uid))
+          && getAfter(marca(resource.data.tallerId, request.auth.uid)).data.inscripcionId == id)
+        // Al eliminar una cuenta: sus pases se desligan (siguen valiendo con el QR) y se borra su marca.
+        || (soloCambia(['uidCiudadano'])
+          && resource.data.uidCiudadano != null
+          && request.resource.data.uidCiudadano == null
+          && ((autenticado() && resource.data.uidCiudadano == request.auth.uid) || esAdmin())
+          && !existsAfter(marca(resource.data.tallerId, resource.data.uidCiudadano)));
+
+      // Cancelar: solo si no se ha usado y el cupo se libera en la misma transacción.
+      allow delete: if resource.data.usado == false
+        && getAfter(ruta('talleres', resource.data.tallerId)).data.ultimaCancelacion == id
+        // Si es de una cuenta, su marca se borra en la misma transacción.
+        && (resource.data.uidCiudadano == null
+            || !existsAfter(marca(resource.data.tallerId, resource.data.uidCiudadano)));
+    }
+
+    // ---------- Un pase por cuenta por actividad ----------
+    match /talleres/{tallerId}/cuentas/{uid} {
+      allow get: if (autenticado() && request.auth.uid == uid) || esPersonal();
+      allow create: if autenticado() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['inscripcionId'])
+        && getAfter(ruta('inscripciones', request.resource.data.inscripcionId)).data.uidCiudadano == uid
+        && getAfter(ruta('inscripciones', request.resource.data.inscripcionId)).data.tallerId == tallerId;
+      allow delete: if esAdmin()
+        || (autenticado() && request.auth.uid == uid
+            && (!existsAfter(ruta('inscripciones', resource.data.inscripcionId))
+                || getAfter(ruta('inscripciones', resource.data.inscripcionId)).data.uidCiudadano != uid));
+      allow update: if false;
+    }
+
+    // ---------- Datos guardados para inscribirse con un toque ----------
+    // Solo la persona dueña de la cuenta puede verlos o cambiarlos (ni administración).
+    // Administración solo puede borrarlos al eliminar la cuenta.
+    match /datosInscripcion/{uid} {
+      allow read: if autenticado() && request.auth.uid == uid;
+      allow delete: if (autenticado() && request.auth.uid == uid) || esAdmin();
+      allow create, update: if autenticado() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['nombre', 'fechaNacimiento', 'genero', 'telefono', 'actualizadoEn'])
+        && texto(request.resource.data.nombre, 2, 60)
+        && request.resource.data.fechaNacimiento is string
+        && request.resource.data.fechaNacimiento.matches('[0-9]{4}-[0-9]{2}-[0-9]{2}')
+        && request.resource.data.genero in ['femenino', 'masculino', 'no_binario', 'prefiero_no_decir']
+        && (request.resource.data.telefono == null || texto(request.resource.data.telefono, 10, 16))
+        && request.resource.data.actualizadoEn is int;
+    }
+
+    // Todo lo demás, cerrado.
+    match /{documento=**} {
+      allow read, write: if false;
+    }
+  }
+}

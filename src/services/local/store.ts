@@ -17,7 +17,7 @@ export interface AlmacenamientoBasico {
   removeItem(clave: string): void;
 }
 
-export type Coleccion = 'recintos' | 'talleres' | 'inscripciones' | 'usuarios' | 'credenciales';
+export type Coleccion = 'recintos' | 'talleres' | 'inscripciones' | 'usuarios' | 'credenciales' | 'datosInscripcion';
 
 type Documento = { id: string } & Record<string, unknown>;
 type Tabla = Record<string, Documento>;
@@ -150,7 +150,7 @@ export class AlmacenLocal {
   }
 
   borrarTodo() {
-    const cols: Coleccion[] = ['recintos', 'talleres', 'inscripciones', 'usuarios', 'credenciales'];
+    const cols: Coleccion[] = ['recintos', 'talleres', 'inscripciones', 'usuarios', 'credenciales', 'datosInscripcion'];
     for (const col of cols) {
       this.almacenamiento.removeItem(PREFIJO + col);
       this.cache.delete(col);

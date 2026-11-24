@@ -1327,6 +1327,13 @@
     background-color: color-mix(in oklab, var(--c-fondo) 84%, var(--c-tinta));
     mask: var(--firma) no-repeat center / contain;
   }
+  /* Sobre el añil del panel: hundida en el mismo azul */
+  .superficie-oscura .bajorrelieve {
+    filter: drop-shadow(0 1px 0 rgb(255 255 255 / 0.16)) drop-shadow(0 -1px 0 rgb(0 0 0 / 0.45));
+  }
+  .superficie-oscura .bajorrelieve > span {
+    background-color: color-mix(in oklab, var(--c-anil) 88%, black);
+  }
   :root[data-tema="oscuro"] .bajorrelieve {
     filter: drop-shadow(0 1px 0 rgb(255 255 255 / 0.08)) drop-shadow(0 -1px 0 rgb(0 0 0 / 0.6));
   }
@@ -1423,5 +1430,469 @@
   from {
     opacity: 0;
     transform: translateY(10px);
+  }
+}
+
+/* Íconos para controles (se usan como máscara: toman el color del token) */
+:root {
+  --icono-flecha: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'><path d='m6 9 6 6 6-6'/></svg>");
+  --icono-flecha-anil: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23263167' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'><path d='m6 9 6 6 6-6'/></svg>");
+  --icono-palomita: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.6' stroke-linecap='round' stroke-linejoin='round'><polyline points='20 6 9 17 4 12'/></svg>");
+  --icono-guion: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='4' stroke-linecap='round'><line x1='5' y1='12' x2='19' y2='12'/></svg>");
+  --icono-cerrar: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round'><path d='M18 6 6 18M6 6l12 12'/></svg>");
+}
+
+/* ================= Controles de formulario con la estética de SICUJ =================
+   Nada debe verse "de navegador": listas, casillas, deslizadores, barras de progreso,
+   campos numéricos y de búsqueda se dibujan con los tokens de la marca. Se conservan
+   los controles nativos (teclado, lectores de pantalla, autocompletado). */
+@layer base {
+  :root {
+    accent-color: var(--c-marca);
+  }
+  ::selection {
+    background: color-mix(in oklab, var(--c-amarillo) 55%, transparent);
+    color: var(--c-tinta);
+  }
+
+  /* ---------- Listas desplegables ---------- */
+  select {
+    appearance: none;
+    padding-inline-end: 2.6rem;
+    background-image: var(--icono-flecha-anil);
+    background-repeat: no-repeat;
+    background-position: right 0.9rem center;
+    background-size: 1rem;
+    cursor: pointer;
+  }
+  @supports (appearance: base-select) {
+    /* Navegadores con <select> personalizable: también el menú lleva la marca */
+    select,
+    ::picker(select) {
+      appearance: base-select;
+    }
+    select {
+      background-image: none;
+      display: flex;
+      align-items: center;
+    }
+    select::picker-icon {
+      content: "";
+      inline-size: 1rem;
+      block-size: 1rem;
+      background-color: var(--c-marca);
+      mask: var(--icono-flecha) no-repeat center / contain;
+      transition: rotate var(--dur-corta) var(--curva-liquida);
+    }
+    select:open::picker-icon {
+      rotate: 180deg;
+    }
+    ::picker(select) {
+      margin-block: 0.35rem;
+      padding: 0.35rem;
+      border: 1.5px solid var(--c-linea);
+      border-radius: 1rem;
+      background: var(--c-superficie);
+      color: var(--c-tinta);
+      box-shadow: 0 18px 40px -14px rgb(11 16 38 / 0.35);
+      max-block-size: min(22rem, 60dvh);
+    }
+    option {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      min-block-size: 2.75rem;
+      padding: 0.4rem 0.75rem;
+      border-radius: 0.65rem;
+      cursor: pointer;
+      transition: background-color var(--dur-micro) var(--curva);
+    }
+    option:hover,
+    option:focus-visible {
+      background: color-mix(in oklab, var(--c-marca) 9%, transparent);
+      outline: none;
+    }
+    option:checked {
+      font-weight: 700;
+      color: var(--c-marca);
+    }
+    option::checkmark {
+      color: var(--c-rojo);
+    }
+    option:disabled {
+      color: var(--c-tenue);
+      cursor: not-allowed;
+    }
+  }
+
+  /* ---------- Casillas y opciones ---------- */
+  input:is([type="checkbox"], [type="radio"]):not([role="switch"]) {
+    appearance: none;
+    display: inline-grid;
+    place-content: center;
+    inline-size: 1.3em;
+    aspect-ratio: 1;
+    margin: 0;
+    border: 2px solid color-mix(in oklab, var(--c-tinta) 45%, transparent);
+    border-radius: 0.4em;
+    background: var(--c-superficie);
+    cursor: pointer;
+    transition:
+      background-color var(--dur-micro) var(--curva),
+      border-color var(--dur-micro) var(--curva);
+  }
+  input[type="radio"] {
+    border-radius: 999px;
+  }
+  input:is([type="checkbox"], [type="radio"]):not([role="switch"])::before {
+    content: "";
+    inline-size: 0.75em;
+    aspect-ratio: 1;
+    background-color: var(--c-marca-tinta);
+    mask: var(--icono-palomita) no-repeat center / contain;
+    scale: 0;
+    transition: scale var(--dur-corta) var(--curva-liquida);
+  }
+  input[type="radio"]::before {
+    mask: none;
+    border-radius: 999px;
+    inline-size: 0.5em;
+  }
+  input:is([type="checkbox"], [type="radio"]):not([role="switch"]):is(:checked, :indeterminate) {
+    border-color: var(--c-marca);
+    background: var(--c-marca);
+  }
+  input[type="checkbox"]:indeterminate::before {
+    mask-image: var(--icono-guion);
+  }
+  input:is([type="checkbox"], [type="radio"]):not([role="switch"]):is(:checked, :indeterminate)::before {
+    scale: 1;
+  }
+  input:is([type="checkbox"], [type="radio"]):not([role="switch"]):hover:not(:disabled, :checked) {
+    border-color: var(--c-marca);
+  }
+  input:is([type="checkbox"], [type="radio"]):disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  @media (forced-colors: active) {
+    input:is([type="checkbox"], [type="radio"])::before {
+      background-color: CanvasText;
+    }
+  }
+
+  /* ---------- Deslizadores ---------- */
+  input[type="range"] {
+    appearance: none;
+    inline-size: 100%;
+    block-size: 2.75rem;
+    background: transparent;
+    cursor: pointer;
+  }
+  input[type="range"]::-webkit-slider-runnable-track {
+    block-size: 0.5rem;
+    border-radius: 999px;
+    background: var(--c-hundido);
+    box-shadow: inset 0 0 0 1px var(--c-linea);
+  }
+  input[type="range"]::-moz-range-track {
+    block-size: 0.5rem;
+    border-radius: 999px;
+    background: var(--c-hundido);
+  }
+  input[type="range"]::-moz-range-progress {
+    block-size: 0.5rem;
+    border-radius: 999px;
+    background: var(--c-marca);
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+    margin-block-start: -0.6rem;
+    inline-size: 1.7rem;
+    block-size: 1.7rem;
+    border: 3px solid var(--c-superficie);
+    border-radius: 999px;
+    background: var(--c-marca);
+    box-shadow: 0 2px 8px rgb(11 16 38 / 0.3);
+  }
+  input[type="range"]::-moz-range-thumb {
+    inline-size: 1.4rem;
+    block-size: 1.4rem;
+    border: 3px solid var(--c-superficie);
+    border-radius: 999px;
+    background: var(--c-marca);
+  }
+
+  /* ---------- Barras de progreso: tejido de rebozo ---------- */
+  progress {
+    appearance: none;
+    border: 0;
+    border-radius: 999px;
+    overflow: hidden;
+    background: var(--c-hundido);
+  }
+  progress::-webkit-progress-bar {
+    background: var(--c-hundido);
+  }
+  progress::-webkit-progress-value {
+    background: var(--rebozo);
+    border-radius: 999px;
+    transition: inline-size var(--dur-corta) var(--curva);
+  }
+  progress::-moz-progress-bar {
+    background: var(--rebozo);
+    border-radius: 999px;
+  }
+
+  /* ---------- Campos numéricos y de búsqueda ---------- */
+  input[type="number"] {
+    appearance: textfield;
+  }
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    appearance: none;
+    margin: 0;
+  }
+  input[type="search"]::-webkit-search-cancel-button {
+    appearance: none;
+    inline-size: 1.1rem;
+    block-size: 1.1rem;
+    background-color: currentColor;
+    mask: var(--icono-cerrar) no-repeat center / contain;
+    opacity: 0.6;
+    cursor: pointer;
+  }
+  input[type="search"]::-webkit-search-cancel-button:hover {
+    opacity: 1;
+  }
+
+  /* Autocompletado: sin el fondo amarillo/azul del navegador */
+  input:autofill,
+  input:-webkit-autofill {
+    -webkit-text-fill-color: var(--c-tinta);
+    box-shadow: inset 0 0 0 100vmax color-mix(in oklab, var(--c-cielo) 10%, var(--c-superficie));
+    caret-color: var(--c-tinta);
+  }
+
+  ::file-selector-button {
+    margin-inline-end: 0.75rem;
+    padding: 0.5rem 1rem;
+    border: 2px solid var(--c-marca);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--c-marca);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  textarea {
+    resize: vertical;
+  }
+}
+
+@layer components {
+  /* ---------- Calendario propio (sustituye al del navegador) ---------- */
+  .calendario {
+    position: fixed;
+    inset: auto;
+    margin: 0;
+    inline-size: min(21rem, calc(100vw - 1.5rem));
+    padding: 0.9rem;
+    border: 1.5px solid var(--c-linea);
+    border-radius: 1.25rem;
+    background: var(--c-superficie);
+    color: var(--c-tinta);
+    box-shadow: 0 24px 50px -18px rgb(11 16 38 / 0.45);
+    overflow: visible;
+  }
+  .calendario:popover-open {
+    animation: entrar-suave 220ms var(--curva-liquida) both;
+  }
+  .calendario-dias {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.15rem;
+  }
+  .calendario-dia {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 1;
+    min-block-size: 2.5rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    transition: background-color var(--dur-micro) var(--curva), color var(--dur-micro) var(--curva);
+  }
+  .calendario-dia:hover:not(:disabled) {
+    background: color-mix(in oklab, var(--c-marca) 9%, transparent);
+  }
+  .calendario-dia[data-fuera] {
+    color: var(--c-tenue);
+    font-weight: 400;
+  }
+  .calendario-dia[data-hoy] {
+    box-shadow: inset 0 0 0 2px var(--c-amarillo);
+  }
+  .calendario-dia[aria-pressed="true"] {
+    background: var(--c-marca);
+    color: var(--c-marca-tinta);
+    box-shadow: none;
+  }
+  .calendario-dia:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+  .calendario-dia:focus-visible {
+    outline: 3px solid var(--c-foco, var(--c-azul));
+    outline-offset: 1px;
+  }
+  .calendario select {
+    min-block-size: 2.5rem;
+    padding-block: 0.25rem;
+    padding-inline-start: 0.7rem;
+    border-radius: 0.75rem;
+    border: 1.5px solid var(--c-linea);
+    background-color: var(--c-superficie);
+    font-weight: 700;
+    color: var(--c-tinta);
+  }
+}
+
+/* Asistente por voz: el micrófono "respira" mientras escucha y vibra suave al hablar */
+@layer components {
+  .microfono {
+    position: relative;
+    isolation: isolate;
+  }
+  .microfono::before,
+  .microfono::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: var(--c-marca);
+    opacity: 0;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .microfono[data-fase="escuchando"]::before,
+    .microfono[data-fase="escuchando"]::after {
+      animation: onda-micro 1.6s var(--curva) infinite;
+    }
+    .microfono[data-fase="escuchando"]::after {
+      animation-delay: 0.8s;
+    }
+    .microfono[data-fase="hablando"]::before {
+      animation: onda-micro 2.4s var(--curva) infinite;
+      background: var(--c-acento);
+    }
+  }
+  .microfono[data-fase="escuchando"] {
+    background: var(--c-rojo);
+  }
+  @keyframes onda-micro {
+    from {
+      opacity: 0.45;
+      scale: 1;
+    }
+    to {
+      opacity: 0;
+      scale: 1.9;
+    }
+  }
+}
+
+/* Ayudas flotantes: se despliegan sobre el botón, como el menú de un chat */
+@layer components {
+  .ayudas-flotantes {
+    position: fixed;
+    inset: auto 1rem calc(var(--alto-barra) + 5.5rem) auto;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    overflow: visible;
+    color: var(--c-tinta);
+  }
+  .ayudas-flotantes::backdrop {
+    background: rgb(11 16 38 / 0.28);
+  }
+  @media (min-width: 64rem) {
+    .ayudas-flotantes {
+      inset: auto 1.5rem 5.5rem auto;
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .ayudas-flotantes li {
+      transition:
+        opacity 160ms var(--curva),
+        translate 280ms var(--curva-liquida);
+    }
+    .ayudas-flotantes li:nth-child(1) {
+      transition-delay: 50ms;
+    }
+    .ayudas-flotantes:popover-open li {
+      @starting-style {
+        opacity: 0;
+        translate: 0 0.9rem;
+      }
+    }
+  }
+}
+
+/* ---------------- App instalada en PC: barra de título propia ----------------
+   Con Window Controls Overlay el sistema solo dibuja minimizar/maximizar/cerrar
+   (con el color de theme-color) y la app pinta el resto de la barra: el añil de la
+   marca con la banda de rebozo, igual que el encabezado. Se arrastra para mover la ventana. */
+.barra-titulo {
+  display: none;
+}
+@media (display-mode: window-controls-overlay) {
+  .barra-titulo {
+    position: fixed;
+    top: 0;
+    left: env(titlebar-area-x, 0);
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    inline-size: env(titlebar-area-width, 100%);
+    block-size: env(titlebar-area-height, 2.25rem);
+    padding-inline: 0.75rem;
+    font: 700 0.8rem/1 var(--font-display, system-ui);
+    color: #fff;
+    -webkit-app-region: drag;
+    app-region: drag;
+    user-select: none;
+  }
+  /* El fondo cubre todo el ancho (también detrás de los botones del sistema) */
+  .barra-titulo::before {
+    content: "";
+    position: fixed;
+    inset: 0 0 auto 0;
+    block-size: env(titlebar-area-height, 2.25rem);
+    z-index: -1;
+    background: #263167;
+    border-block-end: 3px solid transparent;
+    border-image: var(--rebozo) 1;
+  }
+  :root[data-tema="oscuro"] .barra-titulo::before {
+    background: #0b1026;
+  }
+  .barra-titulo-sub {
+    font-weight: 500;
+    opacity: 0.75;
+  }
+  body {
+    padding-block-start: env(titlebar-area-height, 2.25rem);
+  }
+  .sticky.top-0,
+  .encabezado-fijo {
+    top: env(titlebar-area-height, 2.25rem);
+  }
+  /* La banda de rebozo ya va en la barra de título */
+  .encabezado-fijo > .banda-rebozo {
+    display: none;
   }
 }

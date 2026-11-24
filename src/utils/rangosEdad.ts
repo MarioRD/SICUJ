@@ -25,3 +25,18 @@ export function describirRangoTaller(edadMin: number | null, edadMax: number | n
   if (edadMin === null && edadMax !== null) return `Hasta ${edadMax} años`;
   return `De ${edadMin} a ${edadMax} años`;
 }
+
+const FECHA = /^(\d{4})-(\d{2})-(\d{2})$/;
+
+/** Edad cumplida en una fecha dada (por defecto, hoy). null si la fecha no es válida. */
+export function edadEnFecha(fechaNacimiento: string, enMs = Date.now()): number | null {
+  const m = FECHA.exec(fechaNacimiento);
+  if (!m) return null;
+  const [a, mes, d] = [Number(m[1]), Number(m[2]), Number(m[3])];
+  const nac = new Date(a, mes - 1, d);
+  if (nac.getFullYear() !== a || nac.getMonth() !== mes - 1 || nac.getDate() !== d) return null;
+  const en = new Date(enMs);
+  let edad = en.getFullYear() - a;
+  if (en.getMonth() < mes - 1 || (en.getMonth() === mes - 1 && en.getDate() < d)) edad--;
+  return edad >= 0 && edad <= 120 ? edad : null;
+}

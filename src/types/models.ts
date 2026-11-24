@@ -1,8 +1,7 @@
 /**
  * Modelo de datos de SICUJ.
- * Las fechas se manejan como milisegundos (epoch) dentro de la app. Cuando se
- * conecte Firestore, la capa de servicios convertirá Timestamp ⇄ number, así
- * que las páginas y componentes no cambian.
+ * Las fechas son milisegundos (epoch), igual en la app y en Firestore: las reglas
+ * de seguridad las comparan con request.time.toMillis().
  */
 
 export type Categoria =
@@ -78,6 +77,8 @@ export interface Persona {
 /** El ID de la inscripción ES el pase digital (va dentro del QR). */
 export interface Inscripcion {
   id: string;
+  /** Folio corto impreso bajo el QR (respaldo si no se puede escanear). */
+  folio: string;
   tallerId: string;
   tallerTitulo: string;
   tallerFechaInicio: number;
@@ -106,6 +107,20 @@ export interface Usuario {
   rol: Rol;
   activo: boolean;
   creadoEn: number;
+}
+
+/**
+ * Datos que una persona con cuenta autoriza guardar para inscribirse con un toque.
+ * Se guarda la fecha de nacimiento (no la edad) para calcular la edad al día de cada evento.
+ * Solo la persona dueña de la cuenta puede leerlos (ni administración).
+ */
+export interface DatosInscripcion {
+  nombre: string;
+  /** AAAA-MM-DD */
+  fechaNacimiento: string;
+  genero: Genero;
+  telefono: string | null;
+  actualizadoEn: number;
 }
 
 export const CATEGORIAS: Record<Categoria, string> = {

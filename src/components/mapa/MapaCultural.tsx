@@ -49,6 +49,7 @@ export default function MapaCultural({
   buscando = false,
   titulo = 'Descubre el recinto más cercano a ti',
   marco = true,
+  enfoque,
   className = '',
 }: {
   puntos: PuntoMapa[];
@@ -59,6 +60,8 @@ export default function MapaCultural({
   titulo?: string;
   /** true: dentro de tableta/celular con panel; false: el puro mapa (Recintos). */
   marco?: boolean;
+  /** Recinto a destacar (p. ej. tras una búsqueda); `clave` cambia en cada búsqueda. */
+  enfoque?: { id: string; clave: number } | null;
   className?: string;
 }) {
   const nodo = useRef<HTMLDivElement>(null);
@@ -199,12 +202,16 @@ export default function MapaCultural({
   }, [puntos, seleccion]);
 
   useEffect(() => {
+    if (enfoque) setSeleccion(enfoque.id);
+  }, [enfoque]);
+
+  useEffect(() => {
     if (seleccion && elegido) mapa.current?.panTo([elegido.lat, elegido.lng], { animate: true });
   }, [seleccion, elegido]);
 
   return (
     <section aria-labelledby="mapa-titulo" className={`flex flex-col gap-4 ${className}`}>
-      <h2 id="mapa-titulo" className={marco ? 'text-center text-2xl leading-tight font-bold sm:text-3xl' : 'solo-lectores'}>
+      <h2 id="mapa-titulo" tabIndex={-1} className={marco ? 'text-center text-2xl leading-tight font-bold sm:text-3xl' : 'solo-lectores'}>
         {titulo}
       </h2>
       <Marco activo={marco}>
@@ -234,7 +241,7 @@ export default function MapaCultural({
                   <ul className="mt-1 flex flex-col gap-0.5 text-xs">
                     {elegido.actividades.slice(0, 2).map((a) => (
                       <li key={a.id}>
-                        <Link to={`/taller/${a.id}`} className="group inline-flex items-center gap-1 font-semibold text-marca hover:underline">
+                        <Link to={`/taller/${a.id}`} state={{ desde: location.pathname }} className="group inline-flex items-center gap-1 font-semibold text-marca hover:underline">
                           {a.titulo}
                           <ArrowRight aria-hidden className="size-3 transition-transform duration-(--dur-micro) group-hover:translate-x-0.5" />
                         </Link>

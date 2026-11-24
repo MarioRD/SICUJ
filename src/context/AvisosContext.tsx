@@ -1,5 +1,6 @@
 import { CheckCircle2, Info, TriangleAlert, X } from 'lucide-react';
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
+import { Vidrio } from '@/components/ui/Vidrio';
 
 type TipoAviso = 'exito' | 'error' | 'info';
 interface Aviso {
@@ -44,9 +45,11 @@ export function AvisosProvider({ children }: { children: ReactNode }) {
         {avisos.map((a) => {
           const Icono = ICONOS[a.tipo];
           return (
-            <div
+            <Vidrio
               key={a.id}
-              className={`vidrio pointer-events-auto flex w-full max-w-md items-start gap-3 rounded-2xl border p-3.5 text-sm shadow-lg ${ESTILOS[a.tipo]}`}
+              fuerza={16}
+              bisel={14}
+              className={`pointer-events-auto flex w-full max-w-md items-start gap-3 rounded-2xl border p-3.5 text-sm shadow-lg ${ESTILOS[a.tipo]}`}
               style={{ animation: 'entrar-suave 360ms var(--curva-liquida) both' }}
             >
               <Icono aria-hidden className="mt-0.5 size-5 shrink-0" />
@@ -54,7 +57,7 @@ export function AvisosProvider({ children }: { children: ReactNode }) {
               <button type="button" onClick={() => quitar(a.id)} className="rounded p-0.5" aria-label="Cerrar aviso">
                 <X aria-hidden className="size-4" />
               </button>
-            </div>
+            </Vidrio>
           );
         })}
       </div>

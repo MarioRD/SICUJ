@@ -20,9 +20,15 @@ export default defineConfig({
         short_name: 'SICUJ',
         description: 'Talleres, eventos y recintos culturales de Coacalco.',
         lang: 'es-MX',
+        id: '/',
         start_url: '/',
         scope: '/',
         display: 'standalone',
+        // En PC instalada, la app dibuja su propia barra de título junto a los botones de ventana
+        display_override: ['window-controls-overlay', 'standalone'],
+        dir: 'ltr',
+        categories: ['education', 'entertainment', 'lifestyle'],
+        prefer_related_applications: false,
         orientation: 'any', // la escala con clamp()/vmin se ve igual en vertical y horizontal
         background_color: '#ffffff',
         theme_color: '#263167',
@@ -32,12 +38,19 @@ export default defineConfig({
           // Maskable: el logo ocupa el 80 % central (zona segura de Android).
           { src: '/icons/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
+        // Capturas para la ventana de instalación y para PWABuilder / Play Store
+        screenshots: [
+          { src: '/screenshots/inicio-movil.png', sizes: '780x1688', type: 'image/png', form_factor: 'narrow', label: 'Talleres y eventos de Coacalco' },
+          { src: '/screenshots/asistente-movil.png', sizes: '780x1688', type: 'image/png', form_factor: 'narrow', label: 'Asistente por voz' },
+          { src: '/screenshots/inicio-pc.png', sizes: '1440x900', type: 'image/png', form_factor: 'wide', label: 'Mapa cultural de Coacalco' },
+        ],
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,webp,woff2}'],
         // Los chunks de admin/OCR/reportes son pesados: no se precargan,
         // se cachean bajo demanda la primera vez que se usan.
         globIgnores: [
+          'screenshots/**',
           // Panel administrativo (se usa en línea)
           '**/AdminLayout-*.js',
           '**/LoginPage-*.js',
