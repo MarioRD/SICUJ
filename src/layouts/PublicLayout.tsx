@@ -1,5 +1,6 @@
 import { Accessibility, History, Home, LayoutDashboard, LogIn, LogOut, MapPinned, Mic, Moon, ScanText, Sparkles, Sun, Ticket, UserPen, type LucideIcon } from 'lucide-react';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, NavLink, Outlet, ScrollRestoration, useLocation } from 'react-router-dom';
 import { SaltarAlContenido } from '@/components/ui/Basicos';
 import { LucesCandil } from '@/components/ui/LucesCandil';
@@ -125,18 +126,39 @@ function BotonTema({ className = '', flotante = false }: { className?: string; f
 function MenuSesion() {
   const { usuario } = useAuth();
   const [abierto, setAbierto] = useState(false);
+  const [posicion, setPosicion] = useState<{ top: number; right: number } | null>(null);
   const caja = useRef<HTMLDivElement>(null);
+  const boton = useRef<HTMLButtonElement>(null);
+  const menu = useRef<HTMLElement>(null);
   const { pathname } = useLocation();
   useEffect(() => setAbierto(false), [pathname]);
   useEffect(() => {
     if (!abierto) return;
-    const fuera = (e: PointerEvent) => !caja.current?.contains(e.target as Node) && setAbierto(false);
-    const esc = (e: KeyboardEvent) => e.key === 'Escape' && setAbierto(false);
+    // El menú va en <body> (fuera del encabezado de vidrio): un vidrio dentro de otro no
+    // puede refractar la página, solo el encabezado. Se coloca bajo el botón.
+    const colocar = () => {
+      const r = boton.current?.getBoundingClientRect();
+      if (r) setPosicion({ top: r.bottom + 10, right: Math.max(12, window.innerWidth - r.right) });
+    };
+    colocar();
+    const fuera = (e: PointerEvent) => {
+      const t = e.target as Node;
+      if (!caja.current?.contains(t) && !menu.current?.contains(t)) setAbierto(false);
+    };
+    const esc = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      setAbierto(false);
+      boton.current?.focus();
+    };
     document.addEventListener('pointerdown', fuera);
     document.addEventListener('keydown', esc);
+    window.addEventListener('resize', colocar);
+    window.addEventListener('scroll', colocar, { passive: true });
     return () => {
       document.removeEventListener('pointerdown', fuera);
       document.removeEventListener('keydown', esc);
+      window.removeEventListener('resize', colocar);
+      window.removeEventListener('scroll', colocar);
     };
   }, [abierto]);
 
@@ -158,6 +180,7 @@ function MenuSesion() {
   return (
     <div ref={caja} className="relative">
       <button
+        ref={boton}
         type="button"
         onClick={() => setAbierto((a) => !a)}
         aria-expanded={abierto}
@@ -167,12 +190,22 @@ function MenuSesion() {
         <span className="grid size-9 place-items-center rounded-full bg-marca font-bold text-marca-tinta">{iniciales}</span>
         <span className="max-w-[8rem] truncate max-sm:hidden">{usuario.nombre.split(' ')[0]}</span>
       </button>
-      {abierto && (
+      {abierto && posicion && createPortal(
         <Vidrio
+          ref={menu}
           as="div"
           role="menu"
-          className="absolute top-full right-0 z-40 mt-2 flex w-60 flex-col gap-1 rounded-2xl p-2"
-          style={{ animation: 'entrar-suave 260ms var(--curva-liquida) both' }}
+          fuerza={22}
+          bisel={18}
+          escarcha={7}
+          className="fixed! z-40 flex w-60 flex-col gap-1 rounded-3xl p-2 shadow-lg"
+          style={{
+            top: posicion.top,
+            right: posicion.right,
+            // Más tinte que la barra: aquí hay texto que leer
+            ['--vidrio-opacidad' as string]: '62%',
+            animation: 'entrar-suave 260ms var(--curva-liquida) both',
+          }}
         >
           <p className="px-3 pt-1 pb-2 text-sm">
             <strong className="block truncate">{usuario.nombre}</strong>
@@ -194,7 +227,8 @@ function MenuSesion() {
           >
             <LogOut aria-hidden className="size-4.5" /> Cerrar sesión
           </button>
-        </Vidrio>
+        </Vidrio>,
+        document.body,
       )}
     </div>
   );
