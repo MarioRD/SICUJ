@@ -71,6 +71,22 @@ export default function CatalogoPage() {
     return filtrados;
   }, [talleres, busqueda, tipo, orden, coords]);
 
+  /** Lleva la vista a una parte de los resultados (respeta "menos animaciones"). */
+  const irA = (id: string, bloque: ScrollLogicalPosition, enfocar = false) => {
+    const quieto =
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches || document.documentElement.dataset.movimiento === 'reducido';
+    // Dos cuadros: primero React pinta los resultados nuevos, luego se mide
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => {
+        const destino = document.getElementById(id);
+        destino?.scrollIntoView({ behavior: quieto ? 'auto' : 'smooth', block: bloque });
+        if (enfocar) destino?.focus({ preventScroll: true });
+      }),
+    );
+  };
+  // Al elegir un filtro, directo a las tarjetas de actividades
+  const irATarjetas = () => irA('tarjetas-actividades', 'start');
+
   const ordenarPorCercania = () => {
     setOrden('cercania');
     if (!coords) solicitar();
@@ -98,12 +114,8 @@ export default function CatalogoPage() {
       texto: `${n === 1 ? 'Hay 1 actividad' : `Hay ${n} actividades`} de «${q}» en ${lugares === 1 ? '1 lugar' : `${lugares} lugares`}. Te mostramos dónde.`,
     });
     setEnfoque({ id: primero.taller.recintoId, clave: Date.now() });
-    const quieto = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    requestAnimationFrame(() => {
-      const destino = document.getElementById('mapa-titulo');
-      destino?.scrollIntoView({ behavior: quieto ? 'auto' : 'smooth', block: 'start' });
-      destino?.focus({ preventScroll: true });
-    });
+    // La vista queda entre el mapa (dónde es) y la primera actividad encontrada
+    irA('resultados-conteo', 'center', true);
   };
 
   // Palabras cortas: caben en una línea en celular y la portada no cambia de alto al rotar
@@ -202,7 +214,10 @@ export default function CatalogoPage() {
         <ControlSegmentado
           etiqueta="Tipo de actividad"
           valor={tipo}
-          alCambiar={setTipo}
+          alCambiar={(t) => {
+            setTipo(t);
+            irATarjetas();
+          }}
           className="w-full sm:w-auto sm:min-w-[22rem]"
           opciones={[
             { valor: 'todos', texto: 'Todo' },
@@ -213,7 +228,11 @@ export default function CatalogoPage() {
         <ControlSegmentado
           etiqueta="Ordenar actividades"
           valor={orden}
-          alCambiar={(o) => (o === 'cercania' ? ordenarPorCercania() : setOrden('fecha'))}
+          alCambiar={(o) => {
+            if (o === 'cercania') ordenarPorCercania();
+            else setOrden('fecha');
+            irATarjetas();
+          }}
           className="w-full sm:w-auto sm:min-w-[18rem]"
           opciones={[
             { valor: 'fecha', texto: 'Próximos' },
@@ -244,11 +263,17 @@ export default function CatalogoPage() {
             buscando={ubicacion.estado === 'buscando'}
             enfoque={enfoque}
           />
-          <p className="text-sm text-tenue" aria-live="polite">
-            {resultados.length} {resultados.length === 1 ? 'actividad' : 'actividades'}
+          <p
+            id="resultados-conteo"
+            tabIndex={-1}
+            className="flex items-center gap-2 text-base font-semibold text-tinta focus:outline-none"
+            aria-live="polite"
+          >
+            <span className="rounded-full bg-marca px-2.5 py-0.5 text-sm font-bold text-marca-tinta">{resultados.length}</span>
+            {resultados.length === 1 ? 'actividad' : 'actividades'}
             {orden === 'cercania' && coords ? ', de la más cercana a la más lejana' : ''}
           </p>
-          <div className="rejilla-auto rejilla-actividades">
+          <div id="tarjetas-actividades" className="rejilla-auto rejilla-actividades">
             {resultados.map(({ taller, distanciaKm }) => (
               <TarjetaTaller key={taller.id} taller={taller} distanciaKm={distanciaKm} alAbrir={setAbierto} />
             ))}

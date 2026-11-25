@@ -71,9 +71,7 @@ export default function MapaCultural({
   // Pantallas táctiles: el mapa empieza "dormido" para no estorbar al desplazarse por la página.
   // Primer toque: aviso; segundo toque: se activa. Al salir de la vista se vuelve a dormir.
   const [tactil] = useState(() => typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches);
-  const [estadoMapa, setEstadoMapa] = useState<'dormido' | 'aviso' | 'activo'>(tactil ? 'dormido' : 'activo');
-  const estadoRef = useRef(estadoMapa);
-  estadoRef.current = estadoMapa;
+  const [avisoDosDedos, setAvisoDosDedos] = useState(false);
 
   // Distancias y recinto más cercano
   const conDistancia = useMemo(
@@ -148,10 +146,6 @@ export default function MapaCultural({
     });
     obs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-tema'] });
 
-    m.on('click', () => {
-      if (estadoRef.current === 'dormido') setEstadoMapa('aviso');
-      else if (estadoRef.current === 'aviso') setEstadoMapa('activo');
-    });
     m.on('focus click', () => m.scrollWheelZoom.enable());
     m.on('blur mouseout', () => m.scrollWheelZoom.disable());
     capa.current = L.layerGroup().addTo(m);
@@ -163,45 +157,42 @@ export default function MapaCultural({
     };
   }, []);
 
-  // Despertar / dormir los gestos del mapa
+  // Táctil: con un dedo se desplaza la página (como en el resto); con dos se mueve y acerca el mapa.
+  // Si alguien intenta arrastrarlo de lado con un dedo, se le recuerda usar dos.
   useEffect(() => {
     const m = mapa.current;
     if (!m || !tactil) return;
-    const gestos = [m.dragging, m.touchZoom, m.doubleClickZoom];
-    const contenedor = m.getContainer();
-    if (estadoMapa === 'activo') gestos.forEach((g) => g.enable());
-    else gestos.forEach((g) => g.disable());
-    // Dormido: el dedo desplaza la página, no el mapa
-    contenedor.style.touchAction = estadoMapa === 'activo' ? '' : 'pan-x pan-y';
-    if (estadoMapa === 'aviso') {
-      const t = setTimeout(() => setEstadoMapa('dormido'), 3200);
-      return () => clearTimeout(t);
-    }
-    if (estadoMapa !== 'activo') return;
-    // Activo: se vuelve a dormir al dejar de usarlo o al tocar fuera, para no atrapar el scroll
+    m.dragging.disable();
+    m.doubleClickZoom.disable();
+    m.touchZoom.enable();
+    const c = m.getContainer();
+    c.style.touchAction = 'pan-x pan-y';
+    let inicio: { x: number; y: number } | null = null;
     let t = 0;
-    const reiniciar = () => {
-      clearTimeout(t);
-      t = window.setTimeout(() => setEstadoMapa('dormido'), 4500);
+    const alTocar = (e: TouchEvent) => {
+      const d = e.touches[0];
+      inicio = e.touches.length === 1 && d ? { x: d.clientX, y: d.clientY } : null;
+      if (e.touches.length > 1) setAvisoDosDedos(false);
     };
-    const fuera = (e: PointerEvent) => !contenedor.contains(e.target as Node) && setEstadoMapa('dormido');
-    reiniciar();
-    contenedor.addEventListener('pointerdown', reiniciar);
-    m.on('movestart zoomstart', reiniciar);
-    document.addEventListener('pointerdown', fuera);
+    const alMover = (e: TouchEvent) => {
+      const d = e.touches[0];
+      if (!inicio || e.touches.length !== 1 || !d) return;
+      const dx = Math.abs(d.clientX - inicio.x);
+      const dy = Math.abs(d.clientY - inicio.y);
+      if (dx > 24 && dx > dy * 1.2) {
+        inicio = null;
+        setAvisoDosDedos(true);
+        clearTimeout(t);
+        t = window.setTimeout(() => setAvisoDosDedos(false), 1800);
+      }
+    };
+    c.addEventListener('touchstart', alTocar, { passive: true });
+    c.addEventListener('touchmove', alMover, { passive: true });
     return () => {
       clearTimeout(t);
-      contenedor.removeEventListener('pointerdown', reiniciar);
-      m.off('movestart zoomstart', reiniciar);
-      document.removeEventListener('pointerdown', fuera);
+      c.removeEventListener('touchstart', alTocar);
+      c.removeEventListener('touchmove', alMover);
     };
-  }, [estadoMapa, tactil]);
-  useEffect(() => {
-    const el = nodo.current;
-    if (!el || !tactil) return;
-    const io = new IntersectionObserver(([e]) => !e?.isIntersecting && setEstadoMapa('dormido'), { threshold: 0.15 });
-    io.observe(el);
-    return () => io.disconnect();
   }, [tactil]);
 
   // Marcadores
@@ -266,11 +257,11 @@ export default function MapaCultural({
         {titulo}
       </h2>
       <Marco activo={marco}>
-          <div className={`mapa-cultural ${marco ? 'dispositivo-pantalla' : 'mapa-plano'}`} data-lenis-prevent>
+          <div className={`mapa-cultural ${marco ? 'dispositivo-pantalla' : 'mapa-plano'}`}>
             <div ref={nodo} className="absolute inset-0" aria-label="Mapa de recintos de Coacalco" />
-            {tactil && estadoMapa !== 'activo' && (
+            {tactil && (
               <div aria-live="polite" className="pointer-events-none absolute inset-x-0 z-[600] flex justify-center px-3" style={{ bottom: marco ? 'calc(var(--corte) + 3.25rem)' : '4.25rem' }}>
-                {estadoMapa === 'aviso' && (
+                {avisoDosDedos && (
                   <Vidrio
                     as="p"
                     fuerza={12}
@@ -278,7 +269,7 @@ export default function MapaCultural({
                     className="flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-bold whitespace-nowrap text-tinta shadow-lg"
                     style={{ animation: 'entrar-suave 240ms var(--curva-liquida) both' }}
                   >
-                    <Hand aria-hidden className="size-4 text-marca" /> Toca otra vez para moverlo
+                    <Hand aria-hidden className="size-4 text-marca" /> Usa dos dedos para mover el mapa
                   </Vidrio>
                 )}
               </div>
@@ -292,21 +283,21 @@ export default function MapaCultural({
                 fuerza={12}
                 bisel={10}
                 escarcha={8}
-                className={`absolute top-3 left-3 z-[500] flex max-w-[min(78%,17rem)] flex-col gap-1 rounded-2xl p-3.5 shadow-lg ${marco ? 'max-md:top-12' : ''}`}
+                className={`absolute top-3 left-3 z-[500] flex max-w-[min(78%,17rem)] flex-col gap-1 rounded-2xl p-3.5 shadow-lg max-sm:right-3 max-sm:max-w-none max-sm:flex-row max-sm:items-center max-sm:gap-2 max-sm:rounded-full max-sm:py-1.5 max-sm:pr-1.5 max-sm:pl-4 ${marco ? 'max-md:top-12' : ''}`}
                 // Más opaca que el resto del vidrio: el mapa de fondo tiene mucho detalle
                 style={{ animation: 'entrar-suave 320ms var(--curva-liquida) both', ['--vidrio-opacidad' as string]: '86%' }}
                 key={elegido.id}
               >
-                <p className="text-xs text-tenue">{etiquetaFicha}</p>
-                <p className="fuente-display text-base leading-tight font-bold text-marca">{elegido.nombre}</p>
+                <p className="text-xs text-tenue max-sm:hidden">{etiquetaFicha}</p>
+                <p className="fuente-display min-w-0 text-base leading-tight font-bold text-marca max-sm:flex-1 max-sm:truncate max-sm:text-sm">{elegido.nombre}</p>
                 {(elegido.distanciaKm !== undefined || elegido.direccion) && (
-                  <p className="flex items-start gap-1 text-xs text-tenue">
+                  <p className="flex items-start gap-1 text-xs text-tenue max-sm:hidden">
                     <MapPin aria-hidden className="mt-px size-3.5 shrink-0" />
                     {elegido.distanciaKm !== undefined ? `a ${formatearDistancia(elegido.distanciaKm)} de ti` : elegido.direccion}
                   </p>
                 )}
                 {elegido.actividades.length > 0 && (
-                  <ul className="mt-1 flex flex-col gap-0.5 text-xs">
+                  <ul className="mt-1 flex flex-col gap-0.5 text-xs max-sm:hidden">
                     {elegido.actividades.slice(0, 2).map((a) => (
                       <li key={a.id}>
                         <Link to={`/taller/${a.id}`} state={{ desde: location.pathname }} className="group inline-flex items-center gap-1 font-semibold text-marca hover:underline">
@@ -320,9 +311,12 @@ export default function MapaCultural({
                 <button
                   type="button"
                   onClick={() => alComoLlegar({ nombre: elegido.nombre, lat: elegido.lat, lng: elegido.lng })}
-                  className="brillo mt-2 inline-flex min-h-9 w-fit items-center gap-1.5 rounded-full bg-rojo px-4 text-sm font-bold text-blanco shadow-sm transition-transform duration-(--dur-micro) active:scale-95"
+                  aria-label={`Cómo llegar a ${elegido.nombre}`}
+                  className="brillo mt-2 inline-flex min-h-9 w-fit shrink-0 items-center gap-1.5 rounded-full bg-rojo px-4 text-sm font-bold text-blanco shadow-sm transition-transform duration-(--dur-micro) active:scale-95 max-sm:mt-0 max-sm:px-3.5"
                 >
-                  <Navigation aria-hidden className="size-3.5" /> Cómo llegar
+                  <Navigation aria-hidden className="size-3.5" />
+                  <span className="max-sm:hidden">Cómo llegar</span>
+                  <span className="sm:hidden">Ir</span>
                 </button>
               </Vidrio>
             )}
